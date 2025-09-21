@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Upload, X, FileVideo, AlertCircle } from "lucide-react";
+import { Upload, X, FileVideo, AlertCircle, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,8 @@ import type {
 import {
   DEFAULT_ALLOWED_TYPES,
   DEFAULT_MAX_SIZE_BYTES,
+  DEFAULT_ALLOWED_THUMBNAIL_TYPES,
+  DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
   POLLING_INTERVAL_MS,
   POLLING_TIMEOUT_MS,
   TAG_LIMITS,
@@ -38,6 +41,8 @@ export function VideoUploadForm({
   authToken,
   maxSizeBytes = DEFAULT_MAX_SIZE_BYTES,
   allowedTypes = DEFAULT_ALLOWED_TYPES,
+  maxThumbnailSizeBytes = DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
+  allowedThumbnailTypes = DEFAULT_ALLOWED_THUMBNAIL_TYPES,
   defaultVisibility = "unlisted",
   className,
   onSuccess,
@@ -45,7 +50,9 @@ export function VideoUploadForm({
 }: VideoUploadFormProps) {
   // State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isThumbnailDragOver, setIsThumbnailDragOver] = useState(false);
   const [phase, setPhase] = useState<
     "idle" | "uploading" | "processing" | "ready" | "failed"
   >("idle");
@@ -69,6 +76,7 @@ export function VideoUploadForm({
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
@@ -108,6 +116,25 @@ export function VideoUploadForm({
       return null;
     },
     [allowedTypes, maxSizeBytes]
+  );
+
+  // Thumbnail validation
+  const validateThumbnail = useCallback(
+    (file: File): string | null => {
+      if (!allowedThumbnailTypes.includes(file.type)) {
+        return `Thumbnail type not supported. Allowed types: ${allowedThumbnailTypes
+          .map((type) => type.split("/")[1])
+          .join(", ")}`;
+      }
+
+      if (file.size > maxThumbnailSizeBytes) {
+        const maxSizeMB = Math.round(maxThumbnailSizeBytes / (1024 * 1024));
+        return `Thumbnail too large. Maximum size: ${maxSizeMB}MB`;
+      }
+
+      return null;
+    },
+    [allowedThumbnailTypes, maxThumbnailSizeBytes]
   );
 
   // Form validation
@@ -167,8 +194,16 @@ export function VideoUploadForm({
       }
     }
 
+    // Thumbnail validation (optional)
+    if (selectedThumbnail) {
+      const thumbnailError = validateThumbnail(selectedThumbnail);
+      if (thumbnailError) {
+        newErrors.thumbnail = thumbnailError;
+      }
+    }
+
     return newErrors;
-  }, [formData, selectedFile, validateFile]);
+  }, [formData, selectedFile, selectedThumbnail, validateFile, validateThumbnail]);
 
   // Handle file selection
   const handleFileSelect = useCallback(
@@ -189,6 +224,21 @@ export function VideoUploadForm({
       }
     },
     [formData.title, validateFile]
+  );
+
+  // Handle thumbnail selection
+  const handleThumbnailSelect = useCallback(
+    (file: File) => {
+      const error = validateThumbnail(file);
+      if (error) {
+        setErrors((prev) => ({ ...prev, thumbnail: error }));
+        return;
+      }
+
+      setSelectedThumbnail(file);
+      setErrors((prev) => ({ ...prev, thumbnail: undefined }));
+    },
+    [validateThumbnail]
   );
 
   // Drag and drop handlers
@@ -215,6 +265,30 @@ export function VideoUploadForm({
     [handleFileSelect]
   );
 
+  // Thumbnail drag and drop handlers
+  const handleThumbnailDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsThumbnailDragOver(true);
+  }, []);
+
+  const handleThumbnailDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsThumbnailDragOver(false);
+  }, []);
+
+  const handleThumbnailDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsThumbnailDragOver(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        handleThumbnailSelect(files[0]);
+      }
+    },
+    [handleThumbnailSelect]
+  );
+
   // File input change
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,9 +300,25 @@ export function VideoUploadForm({
     [handleFileSelect]
   );
 
+  // Thumbnail input change
+  const handleThumbnailInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleThumbnailSelect(files[0]);
+      }
+    },
+    [handleThumbnailSelect]
+  );
+
   // Open file picker
   const openFilePicker = useCallback(() => {
     fileInputRef.current?.click();
+  }, []);
+
+  // Open thumbnail picker
+  const openThumbnailPicker = useCallback(() => {
+    thumbnailInputRef.current?.click();
   }, []);
 
   // Handle keyboard events for accessibility
@@ -257,6 +347,14 @@ export function VideoUploadForm({
     setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  }, []);
+
+  // Remove selected thumbnail
+  const removeThumbnail = useCallback(() => {
+    setSelectedThumbnail(null);
+    if (thumbnailInputRef.current) {
+      thumbnailInputRef.current.value = "";
     }
   }, []);
 
@@ -313,9 +411,54 @@ export function VideoUploadForm({
     });
   }, [selectedFile, strapiBaseUrl, authToken]);
 
+  // Upload thumbnail to Strapi
+  const uploadThumbnailToStrapi = useCallback((): Promise<StrapiUploadResponse> => {
+    return new Promise((resolve, reject) => {
+      if (!selectedThumbnail) {
+        reject(new Error("No thumbnail selected"));
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("files", selectedThumbnail);
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.onload = () => {
+        if (xhr.status === 200 || xhr.status === 201) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch {
+            reject(new Error("Invalid response format"));
+          }
+        } else {
+          reject(new Error(`Thumbnail upload failed: ${xhr.status} ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error("Network error during thumbnail upload"));
+      };
+
+      const headers: Record<string, string> = {};
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+
+      xhr.open("POST", `${strapiBaseUrl}/api/upload`);
+
+      Object.entries(headers).forEach(([key, value]) => {
+        xhr.setRequestHeader(key, value);
+      });
+
+      xhr.send(formData);
+    });
+  }, [selectedThumbnail, strapiBaseUrl, authToken]);
+
   // Create video in Strapi
   const createVideo = useCallback(
-    async (fileId: number): Promise<StrapiVideoResponse> => {
+    async (fileId: number, thumbnailId?: number): Promise<StrapiVideoResponse> => {
       const tags = formData.tags
         .split(",")
         .map((tag) => tag.trim())
@@ -329,6 +472,7 @@ export function VideoUploadForm({
           tags,
           status: "queued" as const,
           source: fileId,
+          ...(thumbnailId && { thumbnail: thumbnailId }),
         },
       };
 
@@ -459,9 +603,18 @@ export function VideoUploadForm({
         setPhase("processing");
         setUploadProgress(100);
 
-        // Step 2: Create video entry
+        // Step 2: Upload thumbnail (if provided)
+        let thumbnailId: number | undefined;
+        if (selectedThumbnail) {
+          const thumbnailResponse = await uploadThumbnailToStrapi();
+          if (thumbnailResponse && thumbnailResponse.length > 0) {
+            thumbnailId = thumbnailResponse[0].id;
+          }
+        }
+
+        // Step 3: Create video entry
         const fileId = uploadResponse[0].id;
-        const videoResponse = await createVideo(fileId);
+        const videoResponse = await createVideo(fileId, thumbnailId);
 
         const { id } = videoResponse.data;
         // setVideoId(id); // For future use
@@ -479,7 +632,7 @@ export function VideoUploadForm({
         setIsSubmitting(false);
       }
     },
-    [validateForm, uploadToStrapi, createVideo, pollVideoStatus, onError]
+    [validateForm, uploadToStrapi, uploadThumbnailToStrapi, selectedThumbnail, createVideo, pollVideoStatus, onError]
   );
 
   // Handle retry
@@ -506,6 +659,10 @@ export function VideoUploadForm({
 
   const getAcceptAttribute = (): string => {
     return allowedTypes.join(",");
+  };
+
+  const getThumbnailAcceptAttribute = (): string => {
+    return allowedThumbnailTypes.join(",");
   };
 
   if (phase !== "idle") {
@@ -596,6 +753,100 @@ export function VideoUploadForm({
             type="file"
             accept={getAcceptAttribute()}
             onChange={handleFileInputChange}
+            className="hidden"
+            aria-hidden="true"
+          />
+        </CardContent>
+      </Card>
+
+      {/* Thumbnail Upload Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Thumbnail (Optional)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!selectedThumbnail ? (
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
+                isThumbnailDragOver
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25 hover:border-primary/50",
+                errors.thumbnail && "border-red-500"
+              )}
+              onDragOver={handleThumbnailDragOver}
+              onDragLeave={handleThumbnailDragLeave}
+              onDrop={handleThumbnailDrop}
+              onClick={openThumbnailPicker}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openThumbnailPicker();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Drop thumbnail image here or click to select"
+            >
+              <ImageIcon className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+              <h3 className="text-base font-medium mb-1">
+                Add custom thumbnail
+              </h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Supported formats:{" "}
+                {allowedThumbnailTypes
+                  .map((type) => type.split("/")[1].toUpperCase())
+                  .join(", ")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Maximum size: {formatFileSize(maxThumbnailSizeBytes)}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Thumbnail Preview */}
+              <div className="flex items-center gap-4 p-4 border rounded-lg">
+                <div className="relative w-16 h-12 bg-muted rounded overflow-hidden">
+                  <Image
+                    src={URL.createObjectURL(selectedThumbnail)}
+                    alt="Thumbnail preview"
+                    width={64}
+                    height={48}
+                    className="w-full h-full object-cover"
+                    unoptimized
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">{selectedThumbnail.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatFileSize(selectedThumbnail.size)}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeThumbnail}
+                  aria-label="Remove thumbnail"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {errors.thumbnail && (
+            <div className="flex items-center gap-2 mt-2 text-sm text-red-600">
+              <AlertCircle className="w-4 h-4" />
+              {errors.thumbnail}
+            </div>
+          )}
+
+          <input
+            ref={thumbnailInputRef}
+            type="file"
+            accept={getThumbnailAcceptAttribute()}
+            onChange={handleThumbnailInputChange}
             className="hidden"
             aria-hidden="true"
           />
@@ -734,6 +985,7 @@ export function VideoUploadForm({
           variant="outline"
           onClick={() => {
             setSelectedFile(null);
+            setSelectedThumbnail(null);
             setFormData({
               title: "",
               description: "",
@@ -743,6 +995,9 @@ export function VideoUploadForm({
             setErrors({});
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
+            }
+            if (thumbnailInputRef.current) {
+              thumbnailInputRef.current.value = "";
             }
           }}
         >

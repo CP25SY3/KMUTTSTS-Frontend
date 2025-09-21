@@ -20,6 +20,7 @@ export interface VideoMetadata {
   status: 'queued' | 'processing' | 'ready' | 'failed';
   slug?: string;
   source?: number;
+  thumbnail?: number;
   posterUrl?: string;
   hlsMasterUrl?: string;
   ingestJobId?: string;
@@ -61,6 +62,8 @@ export interface VideoUploadFormProps {
   authToken?: string;
   maxSizeBytes?: number;
   allowedTypes?: string[];
+  maxThumbnailSizeBytes?: number;
+  allowedThumbnailTypes?: string[];
   defaultVisibility?: 'public' | 'unlisted' | 'private';
   className?: string;
   onSuccess?: (payload: { id: number; slug: string }) => void;
@@ -89,6 +92,7 @@ export interface ValidationErrors {
   description?: string;
   tags?: string;
   file?: string;
+  thumbnail?: string;
 }
 
 // Constants
@@ -99,7 +103,14 @@ export const DEFAULT_ALLOWED_TYPES = [
   'video/webm'
 ];
 
+export const DEFAULT_ALLOWED_THUMBNAIL_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp'
+];
+
 export const DEFAULT_MAX_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GiB
+export const DEFAULT_MAX_THUMBNAIL_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export const POLLING_INTERVAL_MS = 3000; // 3 seconds
 export const POLLING_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
