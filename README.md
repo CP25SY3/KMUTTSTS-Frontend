@@ -112,7 +112,7 @@ npm run dev
 
 ### Environment Variables
 ```env
-NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
+NEXT_PUBLIC_API_BASE_URL=http://localhost:1337
 ```
 
 ### Development Workflow
