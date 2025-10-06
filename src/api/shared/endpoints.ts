@@ -12,6 +12,8 @@ export const pathEndpoints = {
   },
   contents: {
     list: version("/playable-contents/contents"),
+    upload: version("/playable-contents/transcode"),
+    status: (id: string) => version(`/playable-contents/${id}/status`),
   },
   /// ... other endpoints
 };

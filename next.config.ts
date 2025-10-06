@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
         port: '1337',
       }
     ],
-    domains: ["localhost"]
+    domains: ["*"], // allow all domains for image optimization
   }
 };
 

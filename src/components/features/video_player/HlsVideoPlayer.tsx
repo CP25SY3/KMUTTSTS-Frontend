@@ -27,14 +27,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-// Types
-export type CaptionTrack = {
-  src: string;
-  srclang: string;
-  label: string;
-  default?: boolean;
-};
-
 export type QualityPreference =
   | 'auto'
   | { levelIndex: number }
@@ -43,7 +35,6 @@ export type QualityPreference =
 export type HlsVideoPlayerProps = {
   src: string;
   poster?: string;
-  captions?: CaptionTrack[];
   autoPlay?: boolean;
   muted?: boolean;
   playsInline?: boolean;
@@ -97,7 +88,6 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
     {
       src,
       poster,
-      captions = [],
       autoPlay = false,
       muted = false,
       playsInline = true,
@@ -653,16 +643,6 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
             e.stopPropagation();
           }}
         >
-          {captions.map((caption) => (
-            <track
-              key={caption.srclang}
-              kind="subtitles"
-              src={caption.src}
-              srcLang={caption.srclang}
-              label={caption.label}
-              default={caption.default}
-            />
-          ))}
         </video>
 
         {/* Click overlay for play/pause */}

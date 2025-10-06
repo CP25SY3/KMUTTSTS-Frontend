@@ -58,15 +58,14 @@ export interface StrapiVideoListResponse {
 }
 
 export interface VideoUploadFormProps {
-  strapiBaseUrl: string;
   authToken?: string;
   maxSizeBytes?: number;
   allowedTypes?: string[];
   maxThumbnailSizeBytes?: number;
   allowedThumbnailTypes?: string[];
-  defaultVisibility?: 'public' | 'unlisted' | 'private';
+  defaultVisibility?: 'public' | 'authenticated' | 'staff';
   className?: string;
-  onSuccess?: (payload: { id: number; slug: string }) => void;
+  onSuccess?: (payload: { id: string }) => void;
   onError?: (message: string) => void;
 }
 
@@ -83,7 +82,7 @@ export interface UploadProgressCardProps {
 export interface VideoFormData {
   title: string;
   description: string;
-  visibility: 'public' | 'unlisted' | 'private';
+  visibility: 'public' | 'authenticated' | 'staff';
   tags: string;
 }
 

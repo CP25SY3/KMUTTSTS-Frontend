@@ -24,7 +24,7 @@ export default function UploadPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges, isNavigating]);
 
-  const handleUploadSuccess = ({ slug }: { id: number; slug: string }) => {
+  const handleUploadSuccess = ({ id: id }: { id: string }) => {
     setHasUnsavedChanges(false);
     setIsNavigating(true);
 
@@ -32,7 +32,7 @@ export default function UploadPage() {
     console.log("Upload completed successfully!");
 
     // Navigate to watch page
-    router.push(`/watch/${slug}`);
+    router.push(`/watch/${id}`);
   };
 
   const handleUploadError = (message: string) => {
@@ -53,10 +53,7 @@ export default function UploadPage() {
 
           {/* Upload Form */}
           <VideoUploadForm
-            strapiBaseUrl={
-              process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"
-            }
-            defaultVisibility="unlisted"
+            defaultVisibility="public"
             maxSizeBytes={2 * 1024 * 1024 * 1024} // 2GB
             onSuccess={handleUploadSuccess}
             onError={handleUploadError}

@@ -22,28 +22,24 @@ import type {
   VideoUploadFormProps,
   VideoFormData,
   ValidationErrors,
-  StrapiUploadResponse,
-  StrapiVideoResponse,
 } from "@/types/video-upload";
 import {
   DEFAULT_ALLOWED_TYPES,
   DEFAULT_MAX_SIZE_BYTES,
   DEFAULT_ALLOWED_THUMBNAIL_TYPES,
   DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
-  POLLING_INTERVAL_MS,
-  POLLING_TIMEOUT_MS,
   TAG_LIMITS,
   FIELD_LIMITS,
 } from "@/types/video-upload";
+import { useTranscodePlayable } from "@/api/features/postContent/postContentHooks";
+import { PostContentPayload } from "@/api/features/postContent/postContentType";
 
 export function VideoUploadForm({
-  strapiBaseUrl,
-  authToken,
   maxSizeBytes = DEFAULT_MAX_SIZE_BYTES,
   allowedTypes = DEFAULT_ALLOWED_TYPES,
   maxThumbnailSizeBytes = DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
   allowedThumbnailTypes = DEFAULT_ALLOWED_THUMBNAIL_TYPES,
-  defaultVisibility = "unlisted",
+  defaultVisibility = "public",
   className,
   onSuccess,
   onError,
@@ -80,6 +76,7 @@ export function VideoUploadForm({
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
+  const transcode = useTranscodePlayable();
 
   // Hooks
   // const { toast } = useToast(); // For future use
@@ -203,7 +200,13 @@ export function VideoUploadForm({
     }
 
     return newErrors;
-  }, [formData, selectedFile, selectedThumbnail, validateFile, validateThumbnail]);
+  }, [
+    formData,
+    selectedFile,
+    selectedThumbnail,
+    validateFile,
+    validateThumbnail,
+  ]);
 
   // Handle file selection
   const handleFileSelect = useCallback(
@@ -358,223 +361,6 @@ export function VideoUploadForm({
     }
   }, []);
 
-  // Upload to Strapi
-  const uploadToStrapi = useCallback((): Promise<StrapiUploadResponse> => {
-    return new Promise((resolve, reject) => {
-      if (!selectedFile) {
-        reject(new Error("No file selected"));
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("files", selectedFile);
-
-      const xhr = new XMLHttpRequest();
-      xhrRef.current = xhr;
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(progress);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === 200 || xhr.status === 201) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response);
-          } catch {
-            reject(new Error("Invalid response format"));
-          }
-        } else {
-          reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error("Network error during upload"));
-      };
-
-      const headers: Record<string, string> = {};
-      if (authToken) {
-        headers.Authorization = `Bearer ${authToken}`;
-      }
-
-      xhr.open("POST", `${strapiBaseUrl}/api/upload`);
-
-      Object.entries(headers).forEach(([key, value]) => {
-        xhr.setRequestHeader(key, value);
-      });
-
-      xhr.send(formData);
-    });
-  }, [selectedFile, strapiBaseUrl, authToken]);
-
-  // Upload thumbnail to Strapi
-  const uploadThumbnailToStrapi = useCallback((): Promise<StrapiUploadResponse> => {
-    return new Promise((resolve, reject) => {
-      if (!selectedThumbnail) {
-        reject(new Error("No thumbnail selected"));
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("files", selectedThumbnail);
-
-      const xhr = new XMLHttpRequest();
-
-      xhr.onload = () => {
-        if (xhr.status === 200 || xhr.status === 201) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response);
-          } catch {
-            reject(new Error("Invalid response format"));
-          }
-        } else {
-          reject(new Error(`Thumbnail upload failed: ${xhr.status} ${xhr.statusText}`));
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error("Network error during thumbnail upload"));
-      };
-
-      const headers: Record<string, string> = {};
-      if (authToken) {
-        headers.Authorization = `Bearer ${authToken}`;
-      }
-
-      xhr.open("POST", `${strapiBaseUrl}/api/upload`);
-
-      Object.entries(headers).forEach(([key, value]) => {
-        xhr.setRequestHeader(key, value);
-      });
-
-      xhr.send(formData);
-    });
-  }, [selectedThumbnail, strapiBaseUrl, authToken]);
-
-  // Create video in Strapi
-  const createVideo = useCallback(
-    async (fileId: number, thumbnailId?: number): Promise<StrapiVideoResponse> => {
-      const tags = formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag);
-
-      const payload = {
-        data: {
-          title: formData.title,
-          description: formData.description || undefined,
-          visibility: formData.visibility,
-          tags,
-          status: "queued" as const,
-          source: fileId,
-          ...(thumbnailId && { thumbnail: thumbnailId }),
-        },
-      };
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (authToken) {
-        headers.Authorization = `Bearer ${authToken}`;
-      }
-
-      const response = await fetch(`${strapiBaseUrl}/api/videos`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to create video: ${response.status} ${response.statusText}`
-        );
-      }
-
-      return response.json();
-    },
-    [formData, strapiBaseUrl, authToken]
-  );
-
-  // Poll video status
-  const pollVideoStatus = useCallback(
-    (id: number) => {
-      pollingIntervalRef.current = setInterval(async () => {
-        try {
-          const headers: Record<string, string> = {};
-          if (authToken) {
-            headers.Authorization = `Bearer ${authToken}`;
-          }
-
-          const response = await fetch(
-            `${strapiBaseUrl}/api/videos/${id}?populate=*`,
-            {
-              headers,
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch video status");
-          }
-
-          const data: StrapiVideoResponse = await response.json();
-          const {
-            status,
-            slug,
-            errorMessage: apiErrorMessage,
-          } = data.data.attributes;
-
-          if (status === "ready") {
-            setPhase("ready");
-            setVideoSlug(slug || "");
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-            }
-            if (pollingTimeoutRef.current) {
-              clearTimeout(pollingTimeoutRef.current);
-            }
-            onSuccess?.({ id, slug: slug || "" });
-            return;
-          }
-
-          if (status === "failed") {
-            setPhase("failed");
-            setErrorMessage(apiErrorMessage || "Processing failed");
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-            }
-            if (pollingTimeoutRef.current) {
-              clearTimeout(pollingTimeoutRef.current);
-            }
-            return;
-          }
-
-          // Update processing progress if available
-          setProcessingProgress((prev) => Math.min(prev + 5, 95)); // Simulate progress
-        } catch (error) {
-          console.error("Polling error:", error);
-        }
-      }, POLLING_INTERVAL_MS);
-
-      // Timeout after 10 minutes
-      pollingTimeoutRef.current = setTimeout(() => {
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-        }
-        setPhase("failed");
-        setErrorMessage(
-          "Processing timeout. Please contact support if this persists."
-        );
-      }, POLLING_TIMEOUT_MS);
-    },
-    [strapiBaseUrl, authToken, onSuccess]
-  );
-
   // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -582,10 +368,7 @@ export function VideoUploadForm({
 
       const validationErrors = validateForm();
       setErrors(validationErrors);
-
-      if (Object.keys(validationErrors).length > 0) {
-        return;
-      }
+      if (Object.keys(validationErrors).length > 0 || !selectedFile) return;
 
       setIsSubmitting(true);
       setPhase("uploading");
@@ -594,45 +377,78 @@ export function VideoUploadForm({
       setErrorMessage(null);
 
       try {
-        // Step 1: Upload file
-        const uploadResponse = await uploadToStrapi();
-        if (!uploadResponse || uploadResponse.length === 0) {
-          throw new Error("No file uploaded");
+        // Map UI visibility -> API field
+        const exclusiveTo =
+          formData.visibility === "public"
+            ? "public"
+            : formData.visibility === "authenticated"
+            ? "authenticated"
+            : "staff";
+
+        const payload: PostContentPayload = {
+          file: selectedFile,
+          title: formData.title,
+          description: formData.description || undefined,
+          type: "video",
+          exclusiveTo,
+          // thumbnail: selectedThumbnail, // enable when backend accepts it
+        };
+
+        const res = await transcode.mutateAsync({
+          payload,
+          auth: true, // 👈 auto-append Bearer from localStorage ('jwt' or 'token')
+          onProgress: (n) => setUploadProgress(n),
+          attachRef: (xhr) => {
+            xhrRef.current = xhr;
+          }, // optional: allow cancel
+        });
+
+        if (res.ok && res.queued) {
+          setPhase("processing");
+          setUploadProgress(100);
+
+          // TEMP: fake processing progress (replace with real polling when you have a status API)
+          let pct = 0;
+          const timer = setInterval(() => {
+            pct = Math.min(95, pct + 5);
+            setProcessingProgress(pct);
+          }, 800);
+
+          setTimeout(() => {
+            clearInterval(timer);
+            setProcessingProgress(100);
+            setPhase("ready");
+            onSuccess?.({ id: res.documentId });
+          }, 5000);
+        } else {
+          throw new Error("Transcode request failed");
+        }
+      } catch (err) {
+        let message = "Upload failed";
+
+        if (err instanceof Error) {
+          message = err.message;
+        } else if (typeof err === "string") {
+          message = err;
         }
 
-        setPhase("processing");
-        setUploadProgress(100);
-
-        // Step 2: Upload thumbnail (if provided)
-        let thumbnailId: number | undefined;
-        if (selectedThumbnail) {
-          const thumbnailResponse = await uploadThumbnailToStrapi();
-          if (thumbnailResponse && thumbnailResponse.length > 0) {
-            thumbnailId = thumbnailResponse[0].id;
-          }
-        }
-
-        // Step 3: Create video entry
-        const fileId = uploadResponse[0].id;
-        const videoResponse = await createVideo(fileId, thumbnailId);
-
-        const { id } = videoResponse.data;
-        // setVideoId(id); // For future use
-
-        // Step 3: Start polling for status
-        pollVideoStatus(id);
-      } catch (error) {
-        console.error("Upload error:", error);
         setPhase("failed");
-        setErrorMessage(
-          error instanceof Error ? error.message : "Upload failed"
-        );
-        onError?.(error instanceof Error ? error.message : "Upload failed");
+        setErrorMessage(message);
+        onError?.(message);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [validateForm, uploadToStrapi, uploadThumbnailToStrapi, selectedThumbnail, createVideo, pollVideoStatus, onError]
+    [
+      validateForm,
+      selectedFile,
+      formData,
+      transcode,
+      setUploadProgress,
+      setProcessingProgress,
+      onSuccess,
+      onError,
+    ]
   );
 
   // Handle retry
@@ -641,7 +457,6 @@ export function VideoUploadForm({
     setUploadProgress(0);
     setProcessingProgress(0);
     setErrorMessage(null);
-    // setVideoId(null); // For future use
     setVideoSlug("");
   }, []);
 
@@ -919,7 +734,7 @@ export function VideoUploadForm({
             <Label htmlFor="visibility">Visibility</Label>
             <Select
               value={formData.visibility}
-              onValueChange={(value: "public" | "unlisted" | "private") =>
+              onValueChange={(value: "public" | "authenticated" | "staff") =>
                 updateFormData("visibility", value)
               }
             >
@@ -931,10 +746,10 @@ export function VideoUploadForm({
                   Public - Anyone can find and view
                 </SelectItem>
                 <SelectItem value="unlisted">
-                  Unlisted - Only those with link can view
+                  Authenticated - Only those who login can view
                 </SelectItem>
                 <SelectItem value="private">
-                  Private - Only you can view
+                  Staff - Only staff can view
                 </SelectItem>
               </SelectContent>
             </Select>

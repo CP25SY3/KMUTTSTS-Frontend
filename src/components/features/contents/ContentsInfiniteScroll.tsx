@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteContents } from "@/api/features/contents/contentHooks";
+import { useInfiniteContents } from "@/api/features/getContents/contentHooks";
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ContentCard } from ".";

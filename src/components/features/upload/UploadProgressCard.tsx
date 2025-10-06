@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { CheckCircle, XCircle, Upload, Video, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { UploadProgressCardProps } from '@/types/video-upload';
+import React from "react";
+import { CheckCircle, XCircle, Upload, Video, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { UploadProgressCardProps } from "@/types/video-upload";
 
 export function UploadProgressCard({
   phase,
@@ -15,51 +15,51 @@ export function UploadProgressCard({
   errorMessage,
   onRetry,
   onView,
-  className
+  className,
 }: UploadProgressCardProps) {
   const getPhaseInfo = () => {
     switch (phase) {
-      case 'idle':
+      case "idle":
         return {
           icon: Upload,
-          title: 'Ready to Upload',
-          description: 'Select a video file to begin',
-          color: 'text-muted-foreground'
+          title: "Ready to Upload",
+          description: "Select a video file to begin",
+          color: "text-muted-foreground",
         };
-      case 'uploading':
+      case "uploading":
         return {
           icon: Upload,
-          title: 'Uploading Video',
+          title: "Uploading Video",
           description: `Uploading... ${Math.round(uploadPct)}%`,
-          color: 'text-blue-600'
+          color: "text-blue-600",
         };
-      case 'processing':
+      case "processing":
         return {
           icon: Video,
-          title: 'Processing Video',
-          description: 'Converting to HLS format and generating thumbnails',
-          color: 'text-orange-600'
+          title: "Processing Video",
+          description: "Converting to HLS format and generating thumbnails",
+          color: "text-orange-600",
         };
-      case 'ready':
+      case "ready":
         return {
           icon: CheckCircle,
-          title: 'Upload Complete',
-          description: 'Your video is ready to view',
-          color: 'text-green-600'
+          title: "Upload Complete",
+          description: "Your video is ready to view",
+          color: "text-green-600",
         };
-      case 'failed':
+      case "failed":
         return {
           icon: XCircle,
-          title: 'Upload Failed',
-          description: errorMessage || 'An error occurred during upload',
-          color: 'text-red-600'
+          title: "Upload Failed",
+          description: errorMessage || "An error occurred during upload",
+          color: "text-red-600",
         };
       default:
         return {
           icon: Upload,
-          title: 'Ready',
-          description: '',
-          color: 'text-muted-foreground'
+          title: "Ready",
+          description: "",
+          color: "text-muted-foreground",
         };
     }
   };
@@ -67,13 +67,13 @@ export function UploadProgressCard({
   const { icon: Icon, title, description, color } = getPhaseInfo();
 
   return (
-    <Card className={cn('w-full', className)}>
+    <Card className={cn("w-full", className)}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          {phase === 'processing' ? (
-            <Loader2 className={cn('h-5 w-5 animate-spin', color)} />
+          {phase === "processing" ? (
+            <Loader2 className={cn("h-5 w-5 animate-spin", color)} />
           ) : (
-            <Icon className={cn('h-5 w-5', color)} />
+            <Icon className={cn("h-5 w-5", color)} />
           )}
           <span className={color}>{title}</span>
         </CardTitle>
@@ -85,14 +85,14 @@ export function UploadProgressCard({
         </p>
 
         {/* Upload Progress */}
-        {phase === 'uploading' && (
+        {phase === "uploading" && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Upload Progress</span>
               <span>{Math.round(uploadPct)}%</span>
             </div>
-            <Progress 
-              value={uploadPct} 
+            <Progress
+              value={uploadPct}
               className="h-2"
               aria-label={`Upload progress: ${Math.round(uploadPct)}%`}
               aria-valuenow={uploadPct}
@@ -103,7 +103,7 @@ export function UploadProgressCard({
         )}
 
         {/* Processing Progress */}
-        {phase === 'processing' && (
+        {phase === "processing" && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Processing Video</span>
@@ -114,8 +114,8 @@ export function UploadProgressCard({
               )}
             </div>
             {processPct > 0 ? (
-              <Progress 
-                value={processPct} 
+              <Progress
+                value={processPct}
                 className="h-2"
                 aria-label={`Processing progress: ${Math.round(processPct)}%`}
                 aria-valuenow={processPct}
@@ -131,8 +131,8 @@ export function UploadProgressCard({
         )}
 
         {/* Error Message */}
-        {phase === 'failed' && errorMessage && (
-          <div 
+        {phase === "failed" && errorMessage && (
+          <div
             className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-md"
             role="alert"
             aria-live="polite"
@@ -145,8 +145,8 @@ export function UploadProgressCard({
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          {phase === 'failed' && onRetry && (
-            <Button 
+          {phase === "failed" && onRetry && (
+            <Button
               onClick={onRetry}
               variant="outline"
               size="sm"
@@ -155,22 +155,19 @@ export function UploadProgressCard({
               Retry Upload
             </Button>
           )}
-          
-          {phase === 'ready' && onView && (
-            <Button 
-              onClick={onView}
-              size="sm"
-              className="flex-1"
-            >
+
+          {phase === "ready" && onView && (
+            <Button onClick={onView} size="sm" className="flex-1">
               View Video
             </Button>
           )}
         </div>
 
         {/* Loading States */}
-        {(phase === 'uploading' || phase === 'processing') && (
+        {(phase === "uploading" || phase === "processing") && (
           <div className="text-xs text-muted-foreground text-center">
-            Please don&apos;t close this tab while {phase === 'uploading' ? 'uploading' : 'processing'}
+            Please don&apos;t close this tab while{" "}
+            {phase === "uploading" ? "uploading" : "processing"}
           </div>
         )}
       </CardContent>
