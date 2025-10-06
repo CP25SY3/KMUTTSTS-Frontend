@@ -2,11 +2,32 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 import { ModeToggle } from "@/components/ui/ThemeToggle";
+import { useLogin } from "@/api/features/auth/authHooks";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const login = useLogin();
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    login.mutate(
+      { identifier, password },
+      {
+        onSuccess: () => {
+          // navigate to main page on successful login
+          router.push("/");
+        },
+      }
+    );
+  };
+
 
   return (
     <main className="min-h-screen flex">
@@ -26,15 +47,17 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-6">
           <h1 className="text-2xl font-bold text-center">Sign in to Salesai</h1>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={onSubmit}>
             <div>
               <label htmlFor="email" className="sr-only">
                 Email
               </label>
               <input
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 id="email"
-                type="email"
-                placeholder="Email"
+                type="text"
+                placeholder="Username or Email"
                 className="w-full px-4 py-3 rounded-lg focus:outline-none
                            border border-[var(--border)]
                            bg-[var(--background)] text-[var(--foreground)]
@@ -48,6 +71,8 @@ export default function LoginPage() {
                 Password
               </label>
               <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -85,6 +110,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 className="btn-primary w-full font-semibold py-3 rounded-lg"
+                disabled={login.isPending}
               >
                 Sign in
               </button>

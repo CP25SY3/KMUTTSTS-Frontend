@@ -1,6 +1,6 @@
 import { CategoryTabs, StreamGrid } from "@/components/features/streaming";
 
-export default function Page() {
+export default function MainPage() {
   // Use theme context for dynamic styling
   return (
     <div className="min-h-screen">
