@@ -1,4 +1,4 @@
-import StreamCard from "./StreamCard";
+import StreamCard from "./ContentCard";
 
 // Mock data for university streams
 const streamData = [
@@ -78,13 +78,13 @@ const streamData = [
 
 export default function StreamGrid() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
       {streamData.map((stream) => (
         <StreamCard
           key={stream.id}
           title={stream.title}
-          streamerName={stream.streamerName}
-          game={stream.game}
+          creatorName={stream.streamerName}
+          subject={stream.game}
           viewerCount={stream.viewerCount}
           thumbnail={stream.thumbnail}
           isLive={stream.isLive}

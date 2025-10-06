@@ -1,4 +1,4 @@
-import { CategoryTabs, StreamGrid } from "@/components/features/streaming";
+import { CategoryTabs, MockContentsGrid, ContentsInfiniteScroll } from "@/components/features/contents";
 
 export default function MainPage() {
   // Use theme context for dynamic styling
@@ -7,8 +7,9 @@ export default function MainPage() {
       <div className="flex-1 space-y-6">
         {/* Category Tabs */}
         <CategoryTabs />
-        {/* Stream Grid */}
-        <StreamGrid />
+        {/* Content */}
+        {/* <MockContentsGrid /> */}
+        <ContentsInfiniteScroll />
       </div>
     </div>
   );

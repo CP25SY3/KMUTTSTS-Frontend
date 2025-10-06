@@ -9,6 +9,9 @@ export const pathEndpoints = {
   },
   player: {
     playable_content: version(""),
-  }
+  },
+  contents: {
+    list: version("/playable-contents/contents"),
+  },
   /// ... other endpoints
 };
