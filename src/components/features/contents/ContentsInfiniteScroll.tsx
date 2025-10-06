@@ -2,6 +2,7 @@
 
 import { useInfiniteContents } from "@/api/features/contents/contentHooks";
 import { useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ContentCard } from ".";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,6 +19,7 @@ function toCardProps(item: any) {
 }
 
 export default function ContentsGrid() {
+  const router = useRouter();
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteContents();
 
@@ -44,7 +46,7 @@ export default function ContentsGrid() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <main className="mx-auto max-w-7xl p-4">
+    <main className="mx-auto p-4">
       {/* Loading state */}
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -73,6 +75,9 @@ export default function ContentsGrid() {
                     thumbnail={props.thumbnail}
                     creatorAvatar={props.creatorAvatar}
                     isLive={false}
+                    onClick={() => {
+                      router.push(`/watch/${item.documentId}`);
+                    }}
                   />
                 );
               })}

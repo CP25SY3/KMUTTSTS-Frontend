@@ -1,17 +1,28 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HlsVideoPlayer, {
   HlsVideoPlayerHandle,
   type CaptionTrack,
 } from "@/components/features/video_player/HlsVideoPlayer";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/shared/Sidebar";
+import { useParams } from "next/navigation";
 
 export default function PlayerPage() {
+  const params = useParams();
+  const slug = params.id as string;
+
   const playerRef = useRef<HlsVideoPlayerHandle>(null);
   const [currentSrc, setCurrentSrc] = useState<string>("");
   const [customSrc, setCustomSrc] = useState<string>("");
+
+  useEffect(() => {
+    if (slug) {
+      const videoSrc = `http://localhost:1337/uploads/videos/${slug}/master.m3u8`
+      setCurrentSrc(videoSrc);
+    }
+  }, [slug]);
 
   // Example HLS streams for testing
   const exampleStreams = [
@@ -78,10 +89,10 @@ export default function PlayerPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              HLS Video Player
+              HLS Video Player 
             </h1>
             <p className="text-muted-foreground">
-              Test the HLS video player with adaptive bitrate streaming support
+              {slug}
             </p>
           </div>
 

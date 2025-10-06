@@ -3,7 +3,7 @@ export type ContentItem = {
   title: string;
   description: string;
   type: "video" | "audio" | string;
-  exclutiveTo: "public" | "private" | string;
+  exclutiveTo: "public" | "authenticated" | "staff" | string;
   createdAt: string;
   thumbnail?: string;
 };

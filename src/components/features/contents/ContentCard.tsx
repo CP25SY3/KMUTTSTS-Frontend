@@ -12,6 +12,7 @@ export interface ContentCardProps {
   thumbnail?: string;
   creatorAvatar?: string;
   isLive?: boolean;
+  onClick?: () => void;
 }
 
 export default function StreamCard({
@@ -22,9 +23,10 @@ export default function StreamCard({
   thumbnail,
   creatorAvatar: creatorAvatar,
   isLive = false,
+  onClick : onc,
 }: ContentCardProps) {
   return (
-    <Card className="group overflow-hidden border-0 bg-card shadow-sm transition-all hover:shadow-lg hover:scale-105">
+    <Card onClick={onc} className="group overflow-hidden border-0 bg-card shadow-sm transition-all hover:shadow-lg hover:scale-105">
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
         {thumbnail ? (
