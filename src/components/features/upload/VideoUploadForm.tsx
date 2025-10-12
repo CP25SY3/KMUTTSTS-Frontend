@@ -33,6 +33,7 @@ import {
 } from "@/types/video-upload";
 import { useTranscodePlayable } from "@/api/features/postContent/postContentHooks";
 import { PostContentPayload } from "@/api/features/postContent/postContentType";
+import { useRouter } from "next/router";
 
 export function VideoUploadForm({
   channelId,
@@ -81,6 +82,7 @@ export function VideoUploadForm({
 
   // Hooks
   // const { toast } = useToast(); // For future use
+  const router = useRouter();
 
   // Cleanup on unmount
   useEffect(() => {
@@ -466,10 +468,10 @@ export function VideoUploadForm({
 
   // Handle view video
   const handleViewVideo = useCallback(() => {
-    if (videoSlug) {
-      window.location.href = `/watch/${videoSlug}`;
+    if (channelId) {
+      router.push(`/channel/${channelId}`);
     }
-  }, [videoSlug]);
+  }, [channelId, router]);
 
   const formatFileSize = (bytes: number): string => {
     const mb = bytes / (1024 * 1024);
