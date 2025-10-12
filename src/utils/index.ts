@@ -1,0 +1,1 @@
+export { mediaURL } from "./mediaURL";

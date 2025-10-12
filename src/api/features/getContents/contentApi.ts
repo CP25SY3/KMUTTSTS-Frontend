@@ -1,15 +1,7 @@
 import { apiClient } from "@/api/shared/client";
 import { ContentItem, ContentsParams, ContentsResponse } from "./contentType";
 import { pathEndpoints } from "@/api/shared/endpoints";
-
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-/** Convert relative Strapi file URL to absolute */
-export function mediaURL(path?: string) {
-  if (!path) return undefined;
-  if (path.startsWith("http")) return path;
-  return `${BASE}${path}`;
-}
+import { mediaURL } from "@/utils";
 
 /** Build query string according to your endpoint (?paginationStart=0 etc.) */
 function toQuery(params?: ContentsParams) {
