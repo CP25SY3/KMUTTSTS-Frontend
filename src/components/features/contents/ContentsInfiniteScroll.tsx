@@ -3,20 +3,7 @@
 import { useInfiniteContents } from "@/api/features/getContents/contentHooks";
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ContentCard } from ".";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toCardProps(item: any) {
-  return {
-    title: item.title,
-    creatorName: item.createName ?? "Unknown",
-    subject: item.subject ?? "-",
-    viewerCount: item.viewerCount ?? "1k",
-    thumbnail: item.thumbnail ?? "",
-    isLive: item.isLive ?? false,
-    creatorAvatar: item.creatorAvatar ?? "",
-  };
-}
+import { UniversalVideoCard } from "@/components/shared";
 
 export default function ContentsGrid() {
   const router = useRouter();
@@ -63,24 +50,19 @@ export default function ContentsGrid() {
             <p className="text-muted-foreground">No contents.</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {items.map((item) => {
-                const props = toCardProps(item);
-                return (
-                  <ContentCard
-                    key={item.documentId}
-                    title={props.title}
-                    creatorName={props.creatorName}
-                    subject={props.subject}
-                    viewerCount={props.viewerCount}
-                    thumbnail={props.thumbnail}
-                    creatorAvatar={props.creatorAvatar}
-                    isLive={false}
-                    onClick={() => {
-                      router.push(`/watch/${item.documentId}`);
-                    }}
-                  />
-                );
-              })}
+              {items.map((item) => (
+                <UniversalVideoCard
+                  key={item.documentId}
+                  content={{
+                    ...item,
+                    subject: item.type || "Video",
+                  }}
+                  showCreator={true}
+                  onClick={() => {
+                    router.push(`/watch/${item.documentId}`);
+                  }}
+                />
+              ))}
             </div>
           )}
 

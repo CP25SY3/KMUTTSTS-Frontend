@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Grid, List, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import VideoCard from "./VideoCard";
+import { UniversalVideoCard } from "@/components/shared";
 import { useRouter } from "next/navigation";
 
 interface ChannelVideosListProps {
@@ -61,7 +61,7 @@ export default function ChannelVideosList({ channelId }: ChannelVideosListProps)
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search videos..."
+            placeholder="Search videos in channel..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -108,7 +108,7 @@ export default function ChannelVideosList({ channelId }: ChannelVideosListProps)
             }
           >
             {allVideos.map((video) => (
-              <VideoCard
+              <UniversalVideoCard
                 key={video.documentId}
                 content={video}
                 onClick={() => router.push(`/watch/${video.documentId}`)}
