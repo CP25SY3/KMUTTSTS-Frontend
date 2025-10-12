@@ -8,7 +8,7 @@ export const pathEndpoints = {
     me: version("/users/me"),
   },
   player: {
-    playable_content: version(""),
+    detail: (id: string) => version(`/playable-contents/${id}/view`),
   },
   contents: {
     list: version("/playable-contents/contents"),

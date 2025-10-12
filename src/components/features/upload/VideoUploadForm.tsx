@@ -33,7 +33,7 @@ import {
 } from "@/types/video-upload";
 import { useTranscodePlayable } from "@/api/features/postContent/postContentHooks";
 import { PostContentPayload } from "@/api/features/postContent/postContentType";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export function VideoUploadForm({
   channelId,
@@ -57,7 +57,6 @@ export function VideoUploadForm({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingProgress, setProcessingProgress] = useState(0);
   // const [videoId, setVideoId] = useState<number | null>(null); // For future use
-  const [videoSlug, setVideoSlug] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -463,7 +462,6 @@ export function VideoUploadForm({
     setUploadProgress(0);
     setProcessingProgress(0);
     setErrorMessage(null);
-    setVideoSlug("");
   }, []);
 
   // Handle view video
