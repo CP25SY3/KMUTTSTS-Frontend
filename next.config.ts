@@ -8,9 +8,13 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
         port: '1337',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+        port: '',
       }
-    ],
-    domains: ["*"], // allow all domains for image optimization
+    ], // allow all domains for image optimization
   }
 };
 

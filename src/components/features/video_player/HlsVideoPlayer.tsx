@@ -138,6 +138,25 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       return video.canPlayType('application/vnd.apple.mpegurl') !== '';
     }, []);
 
+    // Check for HEVC/H.265 support
+    const checkHEVCSupport = useCallback(() => {
+      const video = document.createElement('video');
+      
+      // Test different HEVC codec profiles
+      const codecTests = [
+        'video/mp4; codecs="hvc1.1.6.L93.B0"',  // Main profile
+        'video/mp4; codecs="hev1.1.6.L93.B0"',  // Alternative format
+        'video/mp4; codecs="hvc1"',              // Basic
+      ];
+      
+      const support = codecTests.some(codec => 
+        video.canPlayType(codec) !== ''
+      );
+      
+      console.log('HEVC Support detected:', support);
+      return support;
+    }, []);
+
     // Format time helper
     const formatTime = useCallback((time: number) => {
       const minutes = Math.floor(time / 60);
@@ -177,7 +196,14 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       }
 
       const isNative = checkNativeHlsSupport();
+      const hasHEVCSupport = checkHEVCSupport();
       setIsNativeHls(isNative);
+      
+      console.log('Player initialization:', {
+        isNativeHLS: isNative,
+        hasHEVCSupport,
+        src
+      });
 
       if (isNative) {
         // Use native HLS support (Safari/iOS)
@@ -264,13 +290,27 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.MEDIA_ERROR:
-                hls.recoverMediaError();
+                // Check for codec-related issues
+                if (data.details === Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR) {
+                  const hasHEVCSupport = checkHEVCSupport();
+                  if (!hasHEVCSupport) {
+                    setError('H.265/HEVC codec not supported. Please try a different browser with hardware acceleration enabled, or use Chrome 107+ / Edge 107+.');
+                  } else {
+                    setError('Video codec incompatible. The video format may not be supported.');
+                  }
+                } else if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                  setError('Video playback stalled. This may be due to insufficient hardware decoding support for H.265.');
+                } else {
+                  // Try to recover from media errors
+                  console.log('Attempting to recover from media error...');
+                  hls.recoverMediaError();
+                }
                 break;
               case Hls.ErrorTypes.NETWORK_ERROR:
                 setError('Network error occurred. Please check your connection.');
                 break;
               default:
-                setError('A fatal error occurred during playback.');
+                setError('A fatal error occurred during playback. This may be due to codec compatibility issues.');
                 hls.destroy();
                 break;
             }
@@ -292,6 +332,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       onError,
       onQualityChanged,
       checkNativeHlsSupport,
+      checkHEVCSupport,
       createQualityLabel,
     ]);
 

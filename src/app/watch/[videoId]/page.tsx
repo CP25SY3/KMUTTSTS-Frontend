@@ -87,7 +87,7 @@ export default function PlayerPage() {
       <div className="min-h-screen bg-background">
         <Sidebar />
         <div className="container mx-auto p-6">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto rounded-xl">
             {/* Loading skeleton */}
             <div className="space-y-6">
               <div className="w-full aspect-video rounded-lg bg-muted animate-pulse"></div>
@@ -129,7 +129,7 @@ export default function PlayerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background rounded-xl">
       <Sidebar />
       <div className="container mx-auto p-6">
         <div className="max-w-6xl mx-auto">
@@ -197,7 +197,7 @@ export default function PlayerPage() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-16 w-16">
                       <AvatarImage src={video.relations.channel.avatarUrl} alt={video.relations.channel.name} />
                       <AvatarFallback>
                         {video.relations.channel.name.substring(0, 2).toUpperCase()}
@@ -206,7 +206,7 @@ export default function PlayerPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Link href={`/channel/${video.relations.channel.id}`}>
-                          <h3 className="font-semibold hover:text-primary cursor-pointer">
+                          <h3 className="font-semibold text-xl hover:text-primary cursor-pointer">
                             {video.relations.channel.name}
                           </h3>
                         </Link>
