@@ -16,20 +16,7 @@ export interface PlayableContent {
   documentId: string;
   title: string;
   description?: string;
-  thumbnail?: {
-    id: number;
-    documentId: string;
-    name: string;
-    url: string;
-    width: number;
-    height: number;
-    ext: string;
-    mime: string;
-    size: number;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt: string;
-  };
+  thumbnail?: string;
   duration?: string;
   views?: number;
   createdAt: string;

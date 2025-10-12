@@ -3,17 +3,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Users, CheckCircle } from "lucide-react";
-import Link from "next/link";
 import { Channel } from "@/api/features/channel/channelTypes";
+import { useRouter } from "next/navigation";
 
 interface ChannelHeaderProps {
   channel: Channel;
 }
 
-
 export default function ChannelHeader({ channel }: ChannelHeaderProps) {
-    const contentCount = channel.playable_contents?.length || 0;
-  
+  const router = useRouter();
+  const contentCount = channel.playable_contents?.length || 0;
+
+  const openUploadPage = () => {
+    router.push(`/upload/${channel.documentId}`);
+  };
+
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-card p-6 shadow-sm">
       {/* Channel Info */}
@@ -39,11 +43,13 @@ export default function ChannelHeader({ channel }: ChannelHeaderProps) {
               </Badge>
             )}
           </div>
-          
+
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              <span>{contentCount} {contentCount === 1 ? 'video' : 'videos'}</span>
+              <span>
+                {contentCount} {contentCount === 1 ? "video" : "videos"}
+              </span>
             </div>
             {channel.createdAt && (
               <>
@@ -64,20 +70,16 @@ export default function ChannelHeader({ channel }: ChannelHeaderProps) {
           </div>
 
           {channel.description && (
-            <p className="text-muted-foreground">
-              {channel.description}
-            </p>
+            <p className="text-muted-foreground">{channel.description}</p>
           )}
         </div>
 
         {/* Upload Button */}
         <div className="flex shrink-0">
-          <Link href="/upload">
-            <Button className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              Upload
-            </Button>
-          </Link>
+          <Button onClick={openUploadPage} className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Upload
+          </Button>
         </div>
       </div>
     </div>

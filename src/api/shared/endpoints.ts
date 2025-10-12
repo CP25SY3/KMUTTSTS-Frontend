@@ -12,7 +12,7 @@ export const pathEndpoints = {
   },
   contents: {
     list: version("/playable-contents/contents"),
-    upload: version("/playable-contents/transcode"),
+    upload: (id: string) => version(`/playable-contents/${id}/transcode`),
     status: (id: string) => version(`/playable-contents/${id}/status`),
   },
   channels: {

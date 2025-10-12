@@ -58,6 +58,7 @@ export interface StrapiVideoListResponse {
 }
 
 export interface VideoUploadFormProps {
+  channelId: string;
   authToken?: string;
   maxSizeBytes?: number;
   allowedTypes?: string[];

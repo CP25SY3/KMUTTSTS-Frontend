@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { VideoUploadForm } from "@/components/features/upload/VideoUploadForm";
 
 export default function UploadPage() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const channelId = useParams().channelId as string;
 
   // Warn before navigating away during upload
   useEffect(() => {
@@ -53,6 +54,8 @@ export default function UploadPage() {
 
           {/* Upload Form */}
           <VideoUploadForm
+            channelId={channelId}
+            allowedTypes={["video/mp4"]}
             defaultVisibility="public"
             maxSizeBytes={2 * 1024 * 1024 * 1024} // 2GB
             onSuccess={handleUploadSuccess}

@@ -10,16 +10,17 @@ const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
  */
 export function transcodePlayableXHR(
   payload: PostContentPayload,
-  opts?: {
+  opts: {
     auth?: boolean;
     authToken?: string; // override token if needed
     onProgress?: (pct: number) => void;
     timeoutMs?: number;
     attachRef?: (xht: XMLHttpRequest) => void; // attach XMLHttpRequest reference if needed
+    channelId: string;
   }
 ): Promise<PostContentResponse> {
   return new Promise((resolve, reject) => {
-    const url = `${baseUrl}${pathEndpoints.contents.upload}`;
+    const url = `${baseUrl}${pathEndpoints.contents.upload(opts.channelId)}`;
     const form = new FormData();
 
     // append fields

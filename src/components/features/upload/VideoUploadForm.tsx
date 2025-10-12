@@ -35,6 +35,7 @@ import { useTranscodePlayable } from "@/api/features/postContent/postContentHook
 import { PostContentPayload } from "@/api/features/postContent/postContentType";
 
 export function VideoUploadForm({
+  channelId,
   maxSizeBytes = DEFAULT_MAX_SIZE_BYTES,
   allowedTypes = DEFAULT_ALLOWED_TYPES,
   maxThumbnailSizeBytes = DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
@@ -391,7 +392,7 @@ export function VideoUploadForm({
           description: formData.description || undefined,
           type: "video",
           exclusiveTo,
-          // thumbnail: selectedThumbnail, // enable when backend accepts it
+          thumbnail: selectedThumbnail || undefined, // enable when backend accepts it
         };
 
         const res = await transcode.mutateAsync({
@@ -401,6 +402,7 @@ export function VideoUploadForm({
           attachRef: (xhr) => {
             xhrRef.current = xhr;
           }, // optional: allow cancel
+          channelId,
         });
 
         if (res.ok && res.queued) {
@@ -448,6 +450,8 @@ export function VideoUploadForm({
       setProcessingProgress,
       onSuccess,
       onError,
+      channelId,
+      selectedThumbnail,
     ]
   );
 
