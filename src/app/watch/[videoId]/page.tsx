@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import HlsVideoPlayer, { HlsVideoPlayerHandle } from "@/components/features/video_player/HlsVideoPlayer";
+import HlsVideoPlayer, {
+  HlsVideoPlayerHandle,
+} from "@/components/features/video_player/HlsVideoPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,18 +11,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/shared/Sidebar";
 import { useParams } from "next/navigation";
 import { useVideoDetail } from "@/api/features/player/playerHooks";
-import { 
-  Clock, 
-  Eye, 
-  Calendar, 
-  Shield, 
-  Download, 
-  Settings, 
+import {
+  Clock,
+  Eye,
+  Calendar,
+  Shield,
+  Download,
+  Settings,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { formatDate, formatDuration, formatFileSize } from "@/utils";
 
 export default function PlayerPage() {
   const params = useParams<{ videoId: string }>();
@@ -29,32 +32,6 @@ export default function PlayerPage() {
 
   const { data: response, isLoading, error } = useVideoDetail(videoId);
   const video = response?.data;
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const formatFileSize = (sizeInKB: number) => {
-    if (sizeInKB >= 1024) {
-      const mb = sizeInKB / 1024;
-      // Use toFixed(2) for more precision, then remove trailing zeros
-      return `${parseFloat(mb.toFixed(2))} MB`;
-    } else {
-      return `${sizeInKB.toFixed(1)} KB`;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -119,7 +96,8 @@ export default function PlayerPage() {
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-2">Video Not Found</h1>
               <p className="text-muted-foreground">
-                The video you&apos;re looking for doesn&apos;t exist or is not available.
+                The video you&apos;re looking for doesn&apos;t exist or is not
+                available.
               </p>
             </div>
           </div>
@@ -135,11 +113,14 @@ export default function PlayerPage() {
         <div className="max-w-6xl mx-auto">
           {/* Video Player */}
           <div className="mb-6">
-            {video.status.transcode === "completed" && video.playback.hlsMasterUrl ? (
+            {video.status.transcode === "completed" &&
+            video.playback.hlsMasterUrl ? (
               <HlsVideoPlayer
                 ref={playerRef}
                 src={video.playback.hlsMasterUrl}
-                poster={video.files?.thumbnail?.url || "/api/placeholder/800/450"}
+                poster={
+                  video.files?.thumbnail?.url || "/api/placeholder/800/450"
+                }
                 autoPlay={false}
                 muted={false}
                 initialQuality="auto"
@@ -154,10 +135,14 @@ export default function PlayerPage() {
               <div className="w-full aspect-video rounded-lg bg-muted flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-muted-foreground mb-2">
-                    {video.status.transcode === "processing" ? "Processing video..." : "Video not ready"}
+                    {video.status.transcode === "processing"
+                      ? "Processing video..."
+                      : "Video not ready"}
                   </div>
                   {video.status.error && (
-                    <div className="text-sm text-red-500">Error: {video.status.error}</div>
+                    <div className="text-sm text-red-500">
+                      Error: {video.status.error}
+                    </div>
                   )}
                 </div>
               </div>
@@ -179,11 +164,17 @@ export default function PlayerPage() {
                     <Calendar className="h-4 w-4" />
                     {formatDate(video.timestamps.createdAt)}
                   </div>
-                  <Badge variant="secondary" className="flex items-center gap-1">
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
                     <Shield className="h-3 w-3" />
                     {video.access}
                   </Badge>
-                  <Badge variant="outline" className={getStatusColor(video.status.transcode)}>
+                  <Badge
+                    variant="outline"
+                    className={getStatusColor(video.status.transcode)}
+                  >
                     {getStatusIcon(video.status.transcode)}
                     {video.status.transcode}
                   </Badge>
@@ -198,19 +189,26 @@ export default function PlayerPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage 
-                        src={video.relations?.channel?.avatarUrl || ""} 
-                        alt={video.relations?.channel?.name || "Channel"} 
+                      <AvatarImage
+                        src={video.relations?.channel?.avatarUrl || ""}
+                        alt={video.relations?.channel?.name || "Channel"}
                       />
                       <AvatarFallback>
-                        {video.relations?.channel?.name?.substring(0, 2).toUpperCase() || "CH"}
+                        {video.relations?.channel?.name
+                          ?.substring(0, 2)
+                          .toUpperCase() || "CH"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Link href={`/channel/${video.relations?.channel?.id || ""}`}>
+                        <Link
+                          href={`/channel/${
+                            video.relations?.channel?.id || ""
+                          }`}
+                        >
                           <h3 className="font-semibold text-xl hover:text-primary cursor-pointer">
-                            {video.relations?.channel?.name || "Unknown Channel"}
+                            {video.relations?.channel?.name ||
+                              "Unknown Channel"}
                           </h3>
                         </Link>
                         {video.relations?.channel?.official && (
@@ -251,50 +249,64 @@ export default function PlayerPage() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Dimensions:</span>
                       <span>
-                        {video.playback?.renditions[0].width && video.playback?.renditions[0].height 
+                        {video.playback?.renditions[0].width &&
+                        video.playback?.renditions[0].height
                           ? `${video.playback?.renditions[0].width} × ${video.playback?.renditions[0].height}`
-                          : 'N/A'
-                        }
+                          : "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">File Size:</span>
-                      <span>{video.files?.source?.size ? formatFileSize(video.files.source.size) : 'N/A'}</span>
+                      <span>
+                        {video.files?.source?.size
+                          ? formatFileSize(video.files.source.size)
+                          : "N/A"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Format:</span>
-                      <span>{video.files?.source?.mime || 'N/A'}</span>
+                      <span>{video.files?.source?.mime || "N/A"}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Available Qualities */}
-              {video.playback?.renditions && video.playback.renditions.length > 0 && (
-                <Card>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-3 flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      Available Qualities
-                    </h3>
-                    <div className="space-y-2">
-                      {video.playback.renditions.map((rendition, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
-                          <div>
-                            <div className="font-medium">{rendition.label || 'Unknown'}</div>
+              {video.playback?.renditions &&
+                video.playback.renditions.length > 0 && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Available Qualities
+                      </h3>
+                      <div className="space-y-2">
+                        {video.playback.renditions.map((rendition, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center p-2 rounded bg-muted/50"
+                          >
+                            <div>
+                              <div className="font-medium">
+                                {rendition.label || "Unknown"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {rendition.width || 0}×{rendition.height || 0} •{" "}
+                                {rendition.frameRate || 0}fps
+                              </div>
+                            </div>
                             <div className="text-xs text-muted-foreground">
-                              {rendition.width || 0}×{rendition.height || 0} • {rendition.frameRate || 0}fps
+                              {((rendition.bandwidth || 0) / 1000000).toFixed(
+                                1
+                              )}
+                              M
                             </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {((rendition.bandwidth || 0) / 1000000).toFixed(1)}M
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
               {/* Processing Status */}
               <Card>
@@ -303,7 +315,9 @@ export default function PlayerPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       {getStatusIcon(video.status.transcode)}
-                      <span className="capitalize">{video.status.transcode}</span>
+                      <span className="capitalize">
+                        {video.status.transcode}
+                      </span>
                     </div>
                     {video.status.processedAt && (
                       <div className="text-sm text-muted-foreground">
@@ -327,14 +341,30 @@ export default function PlayerPage() {
                     Downloads
                   </h3>
                   <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <a href={video.files.source?.url || ""} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      asChild
+                    >
+                      <a
+                        href={video.files.source?.url || ""}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Source Video ({formatFileSize(video.files.source.size)})
                       </a>
                     </Button>
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <a href={video.files.thumbnail?.url || ""} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      asChild
+                    >
+                      <a
+                        href={video.files.thumbnail?.url || ""}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Thumbnail Image
                       </a>
