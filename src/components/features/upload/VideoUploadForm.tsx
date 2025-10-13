@@ -34,7 +34,6 @@ import {
 import { useTranscodePlayable } from "@/api/features/postContent/postContentHooks";
 import { PostContentPayload } from "@/api/features/postContent/postContentType";
 import { useRouter } from "next/navigation";
-import { formatFileSize } from "@/utils";
 
 export function VideoUploadForm({
   channelId,
@@ -471,6 +470,11 @@ export function VideoUploadForm({
       router.push(`/channel/${channelId}`);
     }
   }, [channelId, router]);
+
+  const formatFileSize = (bytes: number): string => {
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(1)} MB`;
+  };
 
   const getAcceptAttribute = (): string => {
     return allowedTypes.join(",");
