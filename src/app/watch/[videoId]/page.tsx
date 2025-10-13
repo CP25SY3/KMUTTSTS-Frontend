@@ -251,8 +251,8 @@ export default function PlayerPage() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Dimensions:</span>
                       <span>
-                        {video.files?.thumbnail?.width && video.files?.thumbnail?.height 
-                          ? `${video.files.thumbnail.width} × ${video.files.thumbnail.height}`
+                        {video.playback?.renditions[0].width && video.playback?.renditions[0].height 
+                          ? `${video.playback?.renditions[0].width} × ${video.playback?.renditions[0].height}`
                           : 'N/A'
                         }
                       </span>
