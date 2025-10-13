@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import HlsVideoPlayer, {
   HlsVideoPlayerHandle,
 } from "@/components/features/video_player/HlsVideoPlayer";
@@ -30,8 +30,30 @@ export default function PlayerPage() {
   const videoId = params.videoId;
   const playerRef = useRef<HlsVideoPlayerHandle>(null);
 
-  const { data: response, isLoading, error } = useVideoDetail(videoId);
+  // Determine if we should enable polling based on the current status
+  const [shouldPoll, setShouldPoll] = useState(true);
+
+  const { data: response, isLoading, error } = useVideoDetail(videoId, {
+    enablePolling: shouldPoll,
+  });
   const video = response?.data;
+
+  // Update polling state based on video status
+  useEffect(() => {
+    if (video?.status?.transcode) {
+      const status = video.status.transcode;
+      console.log(`Video status: ${status}, Polling: ${shouldPoll}`);
+      
+      if (status === "completed" || status === "failed") {
+        setShouldPoll(false);
+        console.log("Stopping polling - video processing finished");
+      } else if (status === "processing") {
+        setShouldPoll(true);
+        console.log("Starting polling - video is processing");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video?.status?.transcode]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -178,6 +200,12 @@ export default function PlayerPage() {
                     {getStatusIcon(video.status.transcode)}
                     {video.status.transcode}
                   </Badge>
+                  {shouldPoll && video.status.transcode === "processing" && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Auto-refreshing...
+                    </Badge>
+                  )}
                 </div>
                 {video.description && (
                   <p className="text-muted-foreground">{video.description}</p>
@@ -311,7 +339,15 @@ export default function PlayerPage() {
               {/* Processing Status */}
               <Card>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold mb-3">Processing Status</h3>
+                  <h3 className="font-semibold mb-3">
+                    Processing Status
+                    {shouldPoll && video.status.transcode === "processing" && (
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        Auto-refreshing
+                      </Badge>
+                    )}
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       {getStatusIcon(video.status.transcode)}
