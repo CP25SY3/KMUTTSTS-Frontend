@@ -15,7 +15,7 @@ export function useChannelContents(channelId: string, opts?: {
   pageSize?: number;
   contentType?: string;
 }) {
-  const pageSize = opts?.pageSize ?? 12;
+  const pageSize = opts?.pageSize ?? 8;
   
   return useInfiniteQuery({
     queryKey: ['channel-contents', channelId, { pageSize, ...opts }],

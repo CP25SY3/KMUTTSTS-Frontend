@@ -2,7 +2,6 @@ import { apiClient } from "@/api/shared/client";
 import { pathEndpoints } from "@/api/shared/endpoints";
 import { Channel, ChannelContentsParams, PlayableContent } from "./channelTypes";
 import { mediaURL } from "@/utils";
-import { Item } from "@radix-ui/react-dropdown-menu";
 
 /** Fetch channel by ID */
 export async function fetchChannel(channelId: string): Promise<Channel> {
@@ -13,7 +12,7 @@ export async function fetchChannel(channelId: string): Promise<Channel> {
     
     // Convert profile picture URL to absolute
     if (data.profilePicture) {
-      data.profilePicture = mediaURL(data.profilePicture) || data.profilePicture;
+      data.profilePicture = mediaURL(data.profilePicture);
     }
     
     return data;
@@ -42,6 +41,9 @@ export async function fetchChannelContents(
     return data.map((item) => {
         if (item.thumbnail) {
             item.thumbnail = mediaURL(item.thumbnail);
+        }
+        if (item.channel.profilePicture) {
+            item.channel.profilePicture = mediaURL(item.channel.profilePicture);
         }
         return item;
     })

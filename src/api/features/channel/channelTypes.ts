@@ -12,11 +12,13 @@ export interface Channel {
 }
 
 export interface PlayableContent {
-  id: number;
   documentId: string;
   title: string;
   description?: string;
+  type?: string;
+  exclusiveTo?: string;
   thumbnail?: string;
+  channel: Channel;
   duration?: string;
   views?: number;
   createdAt: string;

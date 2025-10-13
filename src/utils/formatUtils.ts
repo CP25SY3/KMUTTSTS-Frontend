@@ -15,7 +15,7 @@ export function formatFileSize(sizeInKB: number) {
 }
 
 export function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("th-TH", {
+  return new Date(dateString).toLocaleDateString("en-TH", {
     year: "numeric",
     month: "long",
     day: "numeric",

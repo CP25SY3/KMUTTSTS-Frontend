@@ -213,8 +213,8 @@ export default function PlayerPage() {
               </div>
 
               {/* Channel Info */}
-              <Card>
-                <CardContent className="p-4">
+              <Card className="py-4">
+                <CardContent>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
                       <AvatarImage
@@ -253,7 +253,7 @@ export default function PlayerPage() {
             </div>
 
             {/* Sidebar Content */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Video Details */}
               <Card>
                 <CardContent className="p-4">

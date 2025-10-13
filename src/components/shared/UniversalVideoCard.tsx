@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, Clock, Play } from "lucide-react";
+import { Eye, Clock, Play, CheckCircle } from "lucide-react";
 import Image from "next/image";
 
 // Universal content interface that can accommodate different content types
@@ -22,8 +22,9 @@ export interface UniversalContent {
   // Channel/Creator info (optional)
   channelName?: string;
   creatorName?: string;
-  creatorAvatar?: string;
+  profilePicture?: string;
   subject?: string;
+  isOfficial?: boolean;
 }
 
 interface UniversalVideoCardProps {
@@ -34,12 +35,12 @@ interface UniversalVideoCardProps {
   variant?: "default" | "compact";
 }
 
-export default function UniversalVideoCard({ 
-  content, 
-  onClick, 
+export default function UniversalVideoCard({
+  content,
+  onClick,
   showCreator = false,
   showDescription = false,
-  variant = "default" 
+  variant = "default",
 }: UniversalVideoCardProps) {
   const formatDuration = (duration?: string) => {
     if (!duration) return null;
@@ -61,7 +62,7 @@ export default function UniversalVideoCard({
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
@@ -84,8 +85,8 @@ export default function UniversalVideoCard({
   const viewCount = formatViews(content.views, content.viewerCount);
 
   return (
-    <Card 
-      className="group overflow-hidden border-0 bg-card shadow-sm transition-all hover:shadow-lg hover:scale-105 cursor-pointer"
+    <Card
+      className="overflow-hidden gap-2 border-0 bg-card shadow-sm transition-all hover:shadow-lg hover:scale-103 cursor-pointer py-0"
       onClick={onClick}
     >
       {/* Thumbnail */}
@@ -102,7 +103,7 @@ export default function UniversalVideoCard({
             <Play className="h-12 w-12 text-white opacity-50" />
           </div>
         )}
-        
+
         {/* Live Badge */}
         {content.isLive && (
           <Badge className="absolute left-2 top-2 bg-red-500 text-white hover:bg-red-600">
@@ -120,7 +121,7 @@ export default function UniversalVideoCard({
         )}
 
         {/* View Count */}
-        {viewCount && viewCount !== "0" && (
+        {viewCount  && (
           <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/70 px-2 py-1 text-xs text-white">
             <Eye className="h-3 w-3" />
             <span>{viewCount}</span>
@@ -129,26 +130,34 @@ export default function UniversalVideoCard({
       </div>
 
       {/* Content */}
-      <div className={variant === "compact" ? "p-2" : "p-3"}>
+      <div className={variant === "compact" ? "p-3" : "p-4"}>
         <h3 className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-primary">
           {content.title}
         </h3>
-        
+
         <div className="mt-1 space-y-1">
           {/* Show creator info if enabled */}
           {showCreator && (
             <div className="flex items-center gap-2">
-              { (
-                <Avatar className="h-4 w-4">
-                  <AvatarImage src={content.creatorAvatar} alt={content.creatorName || content.channelName} />
+              {
+                <Avatar className="h-6 w-6">
+                  <AvatarImage
+                    src={content.profilePicture}
+                    alt={content.creatorName || content.channelName}
+                  />
                   <AvatarFallback className="text-xs">
-                    {(content.creatorName || content.channelName || "Unknown").substring(0, 1).toUpperCase()}
+                    {(content.creatorName || content.channelName || "Unknown")
+                      .substring(0, 1)
+                      .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-              )}
+              }
               <p className="text-xs text-muted-foreground truncate">
-                {content.creatorName || content.channelName || "Unknown Creator"}
+                {content.creatorName ||
+                  content.channelName ||
+                  "Unknown Creator"}
               </p>
+              {content.isOfficial && <CheckCircle className="h-3 w-3" />}
             </div>
           )}
 

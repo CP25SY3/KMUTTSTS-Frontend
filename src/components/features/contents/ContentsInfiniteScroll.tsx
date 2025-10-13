@@ -4,6 +4,8 @@ import { useInfiniteContents } from "@/api/features/getContents/contentHooks";
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { UniversalVideoCard } from "@/components/shared";
+import { mediaURL } from "@/utils";
+import { Button } from "@/components/ui/button";
 
 export default function ContentsGrid() {
   const router = useRouter();
@@ -26,14 +28,14 @@ export default function ContentsGrid() {
       if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
         fetchNextPage();
       }
-    }, { rootMargin: '100px' }); // prefetch a bit earlier
+    }, { rootMargin: '10px' }); // prefetch a bit earlier
 
     io.observe(el);
     return () => io.unobserve(el);
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <main className="mx-auto p-4">
+    <main className="mx-auto">
       {/* Loading state */}
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -56,6 +58,11 @@ export default function ContentsGrid() {
                   content={{
                     ...item,
                     subject: item.type || "Video",
+                    channelName: item.channel?.channelName,
+                    creatorName: item.channel?.channelName, //TODO: creator name need to be change after
+                    profilePicture: mediaURL(item.channel?.profilePicture),
+                    isOfficial: item.channel?.isOfficial,
+                    // createdAt: item.createdAt,
                   }}
                   showCreator={true}
                   onClick={() => {
@@ -68,19 +75,19 @@ export default function ContentsGrid() {
 
           {/* Load more (fallback / accessibility) */}
           {hasNextPage && (
-            <div className="mt-6 flex items-center justify-center">
-              <button
+            <div className="mt-6 pb-6 flex items-center justify-center">
+              <Button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-60"
+                className="px-8 bg-primary"
               >
-                {isFetchingNextPage ? 'Loading…' : 'Load more'}
-              </button>
+                {isFetchingNextPage ? 'Loading…' : 'Load More Contents'}
+              </Button>
             </div>
           )}
 
           {/* Sentinel for auto-fetch on scroll */}
-          <div ref={sentinelRef} className="h-10 w-full" />
+          <div ref={sentinelRef} className="h-8 w-full" />
         </>
       )}
     </main>

@@ -1,7 +1,7 @@
 "use client";
 import { useChannelContents } from "@/api/features/channel/channelHooks";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Grid, List, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { UniversalVideoCard } from "@/components/shared";
@@ -11,11 +11,13 @@ interface ChannelVideosListProps {
   channelId: string;
 }
 
-export default function ChannelVideosList({ channelId }: ChannelVideosListProps) {
+export default function ChannelVideosList({
+  channelId,
+}: ChannelVideosListProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const {
     data,
     fetchNextPage,
@@ -24,11 +26,30 @@ export default function ChannelVideosList({ channelId }: ChannelVideosListProps)
     isLoading,
     error,
   } = useChannelContents(channelId, {
-    pageSize: 12,
+    pageSize: 8,
     contentType: searchQuery || undefined,
   });
 
   const allVideos = data?.pages.flatMap((page) => page.data) ?? [];
+
+  // IntersectionObserver for infinite scroll
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!hasNextPage || !sentinelRef.current) return;
+    const el = sentinelRef.current;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "10px" } // prefetch a bit earlier
+    );
+    io.observe(el);
+    return () => io.unobserve(el);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isLoading) {
     return (
@@ -36,7 +57,10 @@ export default function ChannelVideosList({ channelId }: ChannelVideosListProps)
         <div className="h-10 animate-pulse rounded bg-muted"></div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-video animate-pulse rounded bg-muted"></div>
+            <div
+              key={i}
+              className="aspect-video animate-pulse rounded bg-muted"
+            ></div>
           ))}
         </div>
       </div>
@@ -118,26 +142,20 @@ export default function ChannelVideosList({ channelId }: ChannelVideosListProps)
 
           {/* Load More */}
           {hasNextPage && (
-            <div className="flex justify-center pt-6">
+            <div className="flex items-center justify-center mt-6 pb-6">
               <Button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                variant="outline"
-                className="px-8"
+                className="px-8 bg-primary"
               >
-                {isFetchingNextPage ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Load More Videos"
-                )}
+                {isFetchingNextPage ? 'Loading…' : 'Load More Contents'}
               </Button>
             </div>
           )}
         </>
       )}
+      {/* Sentinel for auto-fetch on scroll */}
+      <div ref={sentinelRef} className="h-8 w-full" />
     </div>
   );
 }

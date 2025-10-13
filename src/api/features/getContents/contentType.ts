@@ -1,3 +1,10 @@
+export type ChannelInfo = {
+  documentId: string;
+  channelName: string;
+  profilePicture?: string;
+  isOfficial: boolean;
+}
+
 export type ContentItem = {
   documentId: string;
   title: string;
@@ -6,6 +13,7 @@ export type ContentItem = {
   exclutiveTo: "public" | "authenticated" | "staff" | string;
   createdAt: string;
   thumbnail?: string;
+  channel: ChannelInfo;
 };
 
 export type ContentsResponse = ContentItem[];
