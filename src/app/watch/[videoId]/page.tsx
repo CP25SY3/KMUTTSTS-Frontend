@@ -139,7 +139,7 @@ export default function PlayerPage() {
               <HlsVideoPlayer
                 ref={playerRef}
                 src={video.playback.hlsMasterUrl}
-                poster={video.files.thumbnail.url}
+                poster={video.files?.thumbnail?.url || "/api/placeholder/800/450"}
                 autoPlay={false}
                 muted={false}
                 initialQuality="auto"
@@ -198,19 +198,22 @@ export default function PlayerPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={video.relations.channel.avatarUrl} alt={video.relations.channel.name} />
+                      <AvatarImage 
+                        src={video.relations?.channel?.avatarUrl || ""} 
+                        alt={video.relations?.channel?.name || "Channel"} 
+                      />
                       <AvatarFallback>
-                        {video.relations.channel.name.substring(0, 2).toUpperCase()}
+                        {video.relations?.channel?.name?.substring(0, 2).toUpperCase() || "CH"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Link href={`/channel/${video.relations.channel.id}`}>
+                        <Link href={`/channel/${video.relations?.channel?.id || ""}`}>
                           <h3 className="font-semibold text-xl hover:text-primary cursor-pointer">
-                            {video.relations.channel.name}
+                            {video.relations?.channel?.name || "Unknown Channel"}
                           </h3>
                         </Link>
-                        {video.relations.channel.official && (
+                        {video.relations?.channel?.official && (
                           <Badge variant="secondary" className="text-xs">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Official
@@ -247,22 +250,27 @@ export default function PlayerPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Dimensions:</span>
-                      <span>{video.files.thumbnail.width} × {video.files.thumbnail.height}</span>
+                      <span>
+                        {video.files?.thumbnail?.width && video.files?.thumbnail?.height 
+                          ? `${video.files.thumbnail.width} × ${video.files.thumbnail.height}`
+                          : 'N/A'
+                        }
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">File Size:</span>
-                      <span>{formatFileSize(video.files.source.size)}</span>
+                      <span>{video.files?.source?.size ? formatFileSize(video.files.source.size) : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Format:</span>
-                      <span>{video.files.source.mime}</span>
+                      <span>{video.files?.source?.mime || 'N/A'}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Available Qualities */}
-              {video.playback.renditions.length > 0 && (
+              {video.playback?.renditions && video.playback.renditions.length > 0 && (
                 <Card>
                   <CardContent className="p-4">
                     <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -273,13 +281,13 @@ export default function PlayerPage() {
                       {video.playback.renditions.map((rendition, index) => (
                         <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
                           <div>
-                            <div className="font-medium">{rendition.label}</div>
+                            <div className="font-medium">{rendition.label || 'Unknown'}</div>
                             <div className="text-xs text-muted-foreground">
-                              {rendition.width}×{rendition.height} • {rendition.frameRate}fps
+                              {rendition.width || 0}×{rendition.height || 0} • {rendition.frameRate || 0}fps
                             </div>
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {(rendition.bandwidth / 1000000).toFixed(1)}M
+                            {((rendition.bandwidth || 0) / 1000000).toFixed(1)}M
                           </div>
                         </div>
                       ))}
@@ -320,13 +328,13 @@ export default function PlayerPage() {
                   </h3>
                   <div className="space-y-2">
                     <Button variant="outline" className="w-full justify-start" asChild>
-                      <a href={video.files.source.url} target="_blank" rel="noopener noreferrer">
+                      <a href={video.files.source?.url || ""} target="_blank" rel="noopener noreferrer">
                         <Download className="h-4 w-4 mr-2" />
                         Source Video ({formatFileSize(video.files.source.size)})
                       </a>
                     </Button>
                     <Button variant="outline" className="w-full justify-start" asChild>
-                      <a href={video.files.thumbnail.url} target="_blank" rel="noopener noreferrer">
+                      <a href={video.files.thumbnail?.url || ""} target="_blank" rel="noopener noreferrer">
                         <Download className="h-4 w-4 mr-2" />
                         Thumbnail Image
                       </a>

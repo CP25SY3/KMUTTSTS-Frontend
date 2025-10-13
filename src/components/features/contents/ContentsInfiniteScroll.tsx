@@ -26,7 +26,7 @@ export default function ContentsGrid() {
       if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
         fetchNextPage();
       }
-    }, { rootMargin: '200px' }); // prefetch a bit earlier
+    }, { rootMargin: '100px' }); // prefetch a bit earlier
 
     io.observe(el);
     return () => io.unobserve(el);
