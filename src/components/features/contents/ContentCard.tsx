@@ -4,27 +4,29 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye } from "lucide-react";
 import Image from "next/image";
 
-interface StreamCardProps {
+export interface ContentCardProps {
   title: string;
-  streamerName: string;
-  game: string;
+  creatorName: string;
+  subject: string;
   viewerCount: string;
   thumbnail?: string;
-  streamerAvatar?: string;
+  creatorAvatar?: string;
   isLive?: boolean;
+  onClick?: () => void;
 }
 
 export default function StreamCard({
   title,
-  streamerName,
-  game,
+  creatorName: creatorName,
+  subject: subject,
   viewerCount,
   thumbnail,
-  streamerAvatar,
-  isLive = true,
-}: StreamCardProps) {
+  creatorAvatar: creatorAvatar,
+  isLive = false,
+  onClick : onc,
+}: ContentCardProps) {
   return (
-    <Card className="group overflow-hidden border-0 bg-card shadow-sm transition-all hover:shadow-lg hover:scale-105">
+    <Card onClick={onc} className="group overflow-hidden border-0 bg-card shadow-sm transition-all hover:shadow-lg hover:scale-105">
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
         {thumbnail ? (
@@ -65,14 +67,14 @@ export default function StreamCard({
         
         <div className="mt-2 flex items-center gap-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={streamerAvatar} alt={streamerName} />
+            <AvatarImage src={creatorAvatar} alt={creatorName} />
             <AvatarFallback className="text-xs">
-              {streamerName.substring(0, 2).toUpperCase()}
+              {creatorName.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs text-muted-foreground">{streamerName}</p>
-            <p className="truncate text-xs text-muted-foreground">{game}</p>
+            <p className="truncate text-xs text-muted-foreground">{creatorName}</p>
+            <p className="truncate text-xs text-muted-foreground">{subject}</p>
           </div>
         </div>
       </div>
