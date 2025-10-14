@@ -2,19 +2,19 @@ import { apiClient } from "@/api/shared/client";
 import { LoginInput, LoginResponse, StrapiUser } from "./authTypes";
 import { pathEndpoints } from "@/api/shared/endpoints";
 
-const TOKEN_KEY = "auth_token";
+const TOKEN = "token";
 
 export function getToken() {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN);
 }
 export function setToken(token: string) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(TOKEN, token);
 }
 export function clearToken() {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN);
 }
 
 export async function login(input: LoginInput) {
