@@ -15,7 +15,7 @@ export default function ChannelHeader({ channel }: ChannelHeaderProps) {
   const contentCount = channel.playable_contents?.length || 0;
 
   const openUploadPage = () => {
-    router.push(`/upload/${channel.documentId}`);
+    router.push(`/channel/${channel.documentId}/upload`);
   };
 
   return (
