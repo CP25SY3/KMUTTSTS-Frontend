@@ -1,7 +1,8 @@
 import { PostContentPayload, PostContentResponse } from "./postContentType";
 import { pathEndpoints } from "@/api/shared/endpoints";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
+const RAW_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const BASE = RAW_BASE.replace(/\/$/, "");
 
 /**
  * Upload to /api/playable-contents/transcode using XHR (with upload progress).
@@ -20,7 +21,9 @@ export function transcodePlayableXHR(
   }
 ): Promise<PostContentResponse> {
   return new Promise((resolve, reject) => {
-    const url = `${baseUrl}${pathEndpoints.contents.upload(opts.channelId)}`;
+    const path = pathEndpoints.contents.upload(opts.channelId);
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const url = `${BASE}${normalizedPath}`.replace(/([^:]\/)\/+/, "$1"); // collapse duplicate slashes except after protocol
     const form = new FormData();
 
     // append fields
