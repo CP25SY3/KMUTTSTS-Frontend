@@ -6,6 +6,8 @@ import React, { useState } from "react";
 import { ModeToggle } from "@/components/ui/ThemeToggle";
 import { useLogin } from "@/api/features/auth/authHooks";
 import { useRouter } from "next/navigation";
+import { Eye, EyeClosed } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,10 +15,14 @@ export default function LoginPage() {
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [errorText, setErrorText] = useState<string>("");
   const login = useLogin();
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorText("");
+    setIdentifier(identifier.trim());
+    setPassword(password.trim());
     login.mutate(
       { identifier, password },
       {
@@ -24,10 +30,12 @@ export default function LoginPage() {
           // navigate to main page on successful login
           router.push("/");
         },
+        onError: (error) => {
+          setErrorText(error.message);
+        },
       }
     );
   };
-
 
   return (
     <main className="min-h-screen flex">
@@ -45,7 +53,7 @@ export default function LoginPage() {
       </div>
       <div className="flex flex-1 justify-center items-center p-6">
         <div className="w-full max-w-md space-y-6">
-          <h1 className="text-2xl font-bold text-center">Sign in to Salesai</h1>
+          <h1 className="text-2xl font-bold text-center">Sign in to KMUTT Station</h1>
 
           <form className="space-y-4" onSubmit={onSubmit}>
             <div>
@@ -85,12 +93,15 @@ export default function LoginPage() {
               <button
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute inset-y-0 right-3 flex items-center text-[var(--foreground)]/60"
+                className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
                 onClick={() => setShowPassword((v) => !v)}
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? <Eye size={18} /> : <EyeClosed size={18} />}
               </button>
             </div>
+            {errorText && (
+              <p className="mt-1 text-sm text-red-600">{errorText}</p>
+            )}
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2">
@@ -107,13 +118,13 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <button
+              <Button
                 type="submit"
-                className="btn-primary w-full font-semibold py-3 rounded-lg"
-                disabled={login.isPending}
+                className="btn-primary w-full font-semibold py-6 rounded-lg"
+                disabled={login.isPending || identifier.length === 0 || password.length === 0}
               >
                 Sign in
-              </button>
+              </Button>
             </div>
           </form>
 
