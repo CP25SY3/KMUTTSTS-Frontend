@@ -1,7 +1,7 @@
 name: Build Frontend Image
 on:
   push:
-    branches: [ main ]
+    branches: [ development ]
   workflow_dispatch:
 
 jobs:
