@@ -1,4 +1,10 @@
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
+// Allow frontend to work even if NEXT_PUBLIC_API_BASE_URL is not defined at build time.
+// In production you should set NEXT_PUBLIC_API_BASE_URL to something like "https://your-domain" (no trailing slash)
+// or leave it blank when using same-origin reverse proxy. We defensively coerce undefined/null to empty string and
+// normalize duplicate slashes when building the final request URL.
+const RAW_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // do NOT use non-null assertion so undefined won't become 'undefined'
+// Strip trailing slash to avoid // when concatenating
+const BASE = RAW_BASE.replace(/\/$/, "");
 const DEFAULT_TIMEOUT = 10_000;
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -39,7 +45,10 @@ async function doFetch(
   );
 
   try {
-    const response = await fetch(`${BASE}${path}`, {
+  // Ensure path begins with a single slash
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const finalUrl = `${BASE}${normalizedPath}`.replace(/([^:]\/)\/+/, "$1"); // collapse duplicate slashes except after protocol
+  const response = await fetch(finalUrl, {
       method: options.method ?? "GET",
       headers: toHeader(options),
       body: options.body

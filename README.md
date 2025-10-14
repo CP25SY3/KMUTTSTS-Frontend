@@ -115,6 +115,19 @@ npm run dev
 NEXT_PUBLIC_API_BASE_URL=http://localhost:1337
 ```
 
+If you're deploying behind the same-origin reverse proxy (e.g. Nginx serving the Next.js build and proxying /api to the backend) you can leave `NEXT_PUBLIC_API_BASE_URL` empty so calls become relative (`/api/...`).
+
+Production examples:
+```env
+# Same origin (proxy /api/* to backend internally)
+NEXT_PUBLIC_API_BASE_URL=
+
+# Different domain / subdomain
+NEXT_PUBLIC_API_BASE_URL=https://api.example.com
+```
+
+Important: Do NOT let it become the literal string `undefined`. If you see network requests like `/undefined/api/...` it means the build was produced without the variable defined and some code used a non-null assertion. This has been hardened in the client now, but make sure your deployment sets the variable (even as blank) before `next build`.
+
 ### Development Workflow
 ```bash
 # Development server
