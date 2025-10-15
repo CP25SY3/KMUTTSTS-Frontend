@@ -19,6 +19,9 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 # optional hygiene
 ENV NEXT_TELEMETRY_DISABLED=1
+# make the env available at build time
+ARG NEXT_IMAGE_UNOPTIMIZED=1
+ENV NEXT_IMAGE_UNOPTIMIZED=${NEXT_IMAGE_UNOPTIMIZED}
 
 # only production deps for smaller image
 COPY package*.json ./
