@@ -97,7 +97,8 @@ export default function UniversalVideoCard({
       <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
         {thumbnailUrl ? (
           <Image
-            src={toImageSrc(thumbnailUrl)}
+            // src={toImageSrc(thumbnailUrl)}
+            src={mediaURL(thumbnailUrl)}
             alt={content.title}
             fill
             sizes="80"
