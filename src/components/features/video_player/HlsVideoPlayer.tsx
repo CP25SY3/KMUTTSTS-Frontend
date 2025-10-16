@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { mediaURL } from '@/utils';
 
 export type QualityPreference =
   | 'auto'
@@ -670,7 +671,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         <video
           ref={videoRef}
           className={cn('w-full h-auto bg-black', videoClassName)}
-          poster={poster}
+          poster={mediaURL(poster)}
           autoPlay={autoPlay}
           muted={muted}
           playsInline={playsInline}

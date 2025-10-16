@@ -55,15 +55,7 @@ export default function ContentsGrid() {
               {items.map((item) => (
                 <UniversalVideoCard
                   key={item.documentId}
-                  content={{
-                    ...item,
-                    subject: item.type || "Video",
-                    channelName: item.channel?.channelName,
-                    creatorName: item.channel?.channelName, //TODO: creator name need to be change after
-                    profilePicture: mediaURL(item.channel?.profilePicture),
-                    isOfficial: item.channel?.isOfficial,
-                    // createdAt: item.createdAt,
-                  }}
+                  content={item}
                   showCreator={true}
                   onClick={() => {
                     router.push(`/watch/${item.documentId}`);

@@ -4,7 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, Clock, Play, CheckCircle } from "lucide-react";
 import Image from "next/image";
+import { mediaURL } from "@/utils";
 
+interface channelInfo {
+  channelName?: string;
+  creatorName?: string;
+  profilePicture?: string;
+  subject?: string;
+  isOfficial?: boolean;
+}
 // Universal content interface that can accommodate different content types
 export interface UniversalContent {
   documentId?: string;
@@ -19,12 +27,7 @@ export interface UniversalContent {
   publishedAt?: string;
   type?: string;
   isLive?: boolean;
-  // Channel/Creator info (optional)
-  channelName?: string;
-  creatorName?: string;
-  profilePicture?: string;
-  subject?: string;
-  isOfficial?: boolean;
+  channel?: channelInfo
 }
 
 interface UniversalVideoCardProps {
@@ -93,10 +96,12 @@ export default function UniversalVideoCard({
       <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
         {thumbnailUrl ? (
           <Image
-            src={thumbnailUrl}
+            src={mediaURL(thumbnailUrl)}
             alt={content.title}
             fill
+            sizes="80"
             className="object-cover transition-transform group-hover:scale-110"
+            priority={true}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-400 to-gray-600">
@@ -142,22 +147,22 @@ export default function UniversalVideoCard({
               {
                 <Avatar className="h-6 w-6">
                   <AvatarImage
-                    src={content.profilePicture}
-                    alt={content.creatorName || content.channelName}
+                    src={mediaURL(content.channel?.profilePicture)}
+                    alt={content.channel?.channelName || content.channel?.channelName}
                   />
                   <AvatarFallback className="text-xs">
-                    {(content.creatorName || content.channelName || "Unknown")
+                    {(content.channel?.channelName || content.channel?.creatorName || "Unknown")
                       .substring(0, 1)
                       .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               }
               <p className="text-xs text-muted-foreground truncate">
-                {content.creatorName ||
-                  content.channelName ||
+                {content.channel?.channelName ||
+                  content.channel?.creatorName ||
                   "Unknown Creator"}
               </p>
-              {content.isOfficial && <CheckCircle className="h-3 w-3" />}
+              {content.channel?.isOfficial && <CheckCircle className="h-3 w-3" />}
             </div>
           )}
 

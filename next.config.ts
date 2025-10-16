@@ -1,6 +1,8 @@
 // next.config.ts
 import type { NextConfig } from "next";
 
+const isImageUnptimized = process.env.NEXT_IMAGE_UNOPTIMIZED === "1";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -8,8 +10,8 @@ const nextConfig: NextConfig = {
   images: {
     // Flip this on temporarily if you need to bypass the optimizer while debugging.
     // Usage: NEXT_IMAGE_UNOPTIMIZED=1 next start
-    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === "1",
-
+    unoptimized: isImageUnptimized,
+    domains: ["cp25sy3.sit.kmutt.ac.th", "localhost"],
     // Let Next output AVIF/WebP when the browser supports it.
     formats: ["image/avif", "image/webp"],
 

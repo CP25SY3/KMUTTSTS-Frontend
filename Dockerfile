@@ -21,7 +21,9 @@ ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 # make the env available at build time
 ARG NEXT_IMAGE_UNOPTIMIZED=1
+ARG NEXT_PUBLIC_API_BASE_URL=http://cp25sy3.sit.kmutt.ac.th
 ENV NEXT_IMAGE_UNOPTIMIZED=${NEXT_IMAGE_UNOPTIMIZED}
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 
 # only production deps for smaller image
 COPY package*.json ./
