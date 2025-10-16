@@ -148,7 +148,7 @@ export default function PlayerPage() {
                 initialQuality="auto"
                 capLevelToPlayerSize
                 className="rounded-lg shadow-lg overflow-hidden bg-black"
-                videoClassName="w-full aspect-video"
+                videoClassName=""
                 controlsClassName="p-4"
                 onError={(e) => console.error("Player error:", e)}
                 onReady={() => console.log("Player ready")}

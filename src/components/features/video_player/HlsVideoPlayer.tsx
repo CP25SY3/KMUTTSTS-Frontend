@@ -859,7 +859,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       >
         <video
           ref={videoRef}
-          className={cn('w-full h-auto bg-black', videoClassName)}
+          className={cn('w-full h-full aspect-video', videoClassName)}
           poster={mediaURL(poster)}
           autoPlay={autoPlay}
           muted={muted}
@@ -874,7 +874,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
             e.stopPropagation();
           }}
           style={{
-            cursor: isFullscreen && !showControls ? 'none' : 'auto'
+            cursor: isFullscreen && !showControls ? 'none' : 'auto',
           }}
         >
         </video>

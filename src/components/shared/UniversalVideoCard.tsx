@@ -8,6 +8,7 @@ import { mediaURL } from "@/utils";
 import { toImageSrc } from "@/utils/toImageSrc";
 
 interface channelInfo {
+  documentId?: string;
   channelName?: string;
   creatorName?: string;
   profilePicture?: string;
@@ -28,7 +29,7 @@ export interface UniversalContent {
   publishedAt?: string;
   type?: string;
   isLive?: boolean;
-  channel?: channelInfo
+  channel?: channelInfo;
 }
 
 interface UniversalVideoCardProps {
@@ -128,7 +129,7 @@ export default function UniversalVideoCard({
         )}
 
         {/* View Count */}
-        {viewCount  && (
+        {viewCount && (
           <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/70 px-2 py-1 text-xs text-white">
             <Eye className="h-3 w-3" />
             <span>{viewCount}</span>
@@ -150,10 +151,17 @@ export default function UniversalVideoCard({
                 <Avatar className="h-6 w-6">
                   <AvatarImage
                     src={mediaURL(content.channel?.profilePicture)}
-                    alt={content.channel?.channelName || content.channel?.channelName}
+                    alt={
+                      content.channel?.channelName ||
+                      content.channel?.channelName
+                    }
                   />
                   <AvatarFallback className="text-xs">
-                    {(content.channel?.channelName || content.channel?.creatorName || "Unknown")
+                    {(
+                      content.channel?.channelName ||
+                      content.channel?.creatorName ||
+                      "Unknown"
+                    )
                       .substring(0, 1)
                       .toUpperCase()}
                   </AvatarFallback>
@@ -164,7 +172,9 @@ export default function UniversalVideoCard({
                   content.channel?.creatorName ||
                   "Unknown Creator"}
               </p>
-              {content.channel?.isOfficial && <CheckCircle className="h-3 w-3" />}
+              {content.channel?.isOfficial && (
+                <CheckCircle className="h-3 w-3" />
+              )}
             </div>
           )}
 
