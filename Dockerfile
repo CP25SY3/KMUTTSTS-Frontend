@@ -30,7 +30,7 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/next.config.* ./
-COPY --from=build /app/node_modules/sharp ./node_modules/sharp
+# COPY --from=build /app/node_modules/sharp ./node_modules/sharp
 
 EXPOSE 3000
 CMD ["npm","run","start"]

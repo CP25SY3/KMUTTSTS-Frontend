@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, Clock, Play, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import { mediaURL } from "@/utils";
+import { toImageSrc } from "@/utils/toImageSrc";
 
 interface channelInfo {
   channelName?: string;
@@ -96,7 +97,7 @@ export default function UniversalVideoCard({
       <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
         {thumbnailUrl ? (
           <Image
-            src={mediaURL(thumbnailUrl)}
+            src={toImageSrc(thumbnailUrl)}
             alt={content.title}
             fill
             sizes="80"
