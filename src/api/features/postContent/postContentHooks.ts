@@ -29,7 +29,7 @@ export function useTranscodePlayable() {
         authToken, // or pass a custom token to override
         onProgress,
         attachRef,
-        timeoutMs: 5 * 60_000, // 5 minutes
+        timeoutMs: 20 * 60_000, // 20 minutes
         channelId,
       }),
   });
