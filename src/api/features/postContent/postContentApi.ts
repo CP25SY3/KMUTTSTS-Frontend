@@ -4,7 +4,7 @@ import { pathEndpoints } from "@/api/shared/endpoints";
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
 /**
- * Upload to /api/playable-contents/transcode using XHR (with upload progress).
+ * Upload to /api/playable-contents/upload using XHR (with upload progress).
  * - Automatically attaches token if { auth: true }
  * - Supports custom token override with authToken
  */

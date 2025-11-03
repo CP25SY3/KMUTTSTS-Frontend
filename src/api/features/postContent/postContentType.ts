@@ -1,4 +1,4 @@
-/** Request payload for /api/playable-contents/transcode (multipart/form-data) */
+/** Request payload for /api/playable-contents/upload (multipart/form-data) */
 
 export type PostContentPayload = {
     file: File;
