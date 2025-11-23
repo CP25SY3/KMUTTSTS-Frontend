@@ -1,5 +1,6 @@
 "use client";
 import { ModeToggle } from "@/components/ui/ThemeToggle";
+import { Menu } from "lucide-react";
 
 export interface SearchBarConfig {
   showProfile?: boolean;
@@ -9,9 +10,10 @@ export interface SearchBarConfig {
 
 interface SearchBarProps {
   config?: SearchBarConfig;
+  onMenuClick?: () => void;
 }
 
-export default function SearchBar({ config }: SearchBarProps) {
+export default function SearchBar({ config, onMenuClick }: SearchBarProps) {
   const {
     showProfile = true,
     showThemeToggle = true,
@@ -21,16 +23,25 @@ export default function SearchBar({ config }: SearchBarProps) {
   // Use theme context for dynamic styling
   // ...existing code...
   return (
-    <div className="flex flex-1 items-center justify-center">
-      <div className="flex items-center justify-between px-8 py-4 w-full max-w-2xl">
+    <div className="flex flex-1 items-center justify-center w-full">
+      <div className="flex items-center justify-between px-2 sm:px-8 py-2 sm:py-4 w-full max-w-2xl gap-2">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden rounded-full p-2 hover:bg-muted bg-background text-foreground"
+          aria-label="Open menu"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+
         {/* Search Input */}
-        <div className="flex items-center gap-4 flex-1 max-w-xl">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 max-w-xl">
           <input
             type="text"
             placeholder={placeholder}
-            className="rounded-full px-6 py-2 w-full border border-none focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
+            className="rounded-full px-3 sm:px-6 py-2 w-full border border-none focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground text-sm sm:text-base"
           />
-          <button className="rounded-full p-2 border border-none hover:bg-muted bg-background text-foreground">
+          <button className="hidden sm:flex rounded-full p-2 border border-none hover:bg-muted bg-background text-foreground">
             {/* Search Icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -49,18 +60,23 @@ export default function SearchBar({ config }: SearchBarProps) {
           </button>
         </div>
         {/* Right Side Icons */}
-        <div className="flex items-center gap-4 ml-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {showThemeToggle && (
-            <div className="rounded-full w-16 h-9 flex items-center justify-center bg-background"></div>
+            <div className="hidden sm:flex">
+              <ModeToggle />
+            </div>
           )}
+          {/* Mobile: Show only theme toggle */}
+          <div className="sm:hidden">
+            <ModeToggle />
+          </div>
           {showProfile && (
-            <div className="rounded-full bg-background w-12 h-12 flex items-center justify-center text-gray-500 text-xs">
+            <div className="hidden sm:flex rounded-full bg-background w-12 h-12 items-center justify-center text-gray-500 text-xs">
               50 x 50
             </div>
           )}
         </div>
       </div>
-      <ModeToggle />
     </div>
   );
 }

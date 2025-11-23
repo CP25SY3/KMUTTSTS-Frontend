@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import Sidebar from "@/components/shared/Sidebar";
 import { useParams } from "next/navigation";
 import { useVideoDetail } from "@/api/features/player/playerHooks";
 import {
@@ -33,7 +32,11 @@ export default function PlayerPage() {
   // Determine if we should enable polling based on the current status
   const [shouldPoll, setShouldPoll] = useState(true);
 
-  const { data: response, isLoading, error } = useVideoDetail(videoId, {
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useVideoDetail(videoId, {
     enablePolling: shouldPoll,
   });
   const video = response?.data;
@@ -43,7 +46,7 @@ export default function PlayerPage() {
     if (video?.status?.transcode) {
       const status = video.status.transcode;
       console.log(`Video status: ${status}, Polling: ${shouldPoll}`);
-      
+
       if (status === "completed" || status === "failed") {
         setShouldPoll(false);
         console.log("Stopping polling - video processing finished");
@@ -84,13 +87,12 @@ export default function PlayerPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Sidebar />
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-2 sm:p-6">
           <div className="max-w-6xl mx-auto rounded-xl">
             {/* Loading skeleton */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="w-full aspect-video rounded-lg bg-muted animate-pulse"></div>
-              <div className="grid gap-6 lg:grid-cols-3">
+              <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2 space-y-4">
                   <div className="h-8 w-3/4 bg-muted rounded animate-pulse"></div>
                   <div className="h-4 w-1/2 bg-muted rounded animate-pulse"></div>
@@ -111,13 +113,14 @@ export default function PlayerPage() {
   if (error || !video) {
     return (
       <div className="min-h-screen bg-background">
-        <Sidebar />
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-2 sm:p-6">
           <div className="max-w-6xl mx-auto">
             <div className="text-center py-12">
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Video Not Found</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold mb-2">
+                Video Not Found
+              </h1>
+              <p className="text-muted-foreground text-sm sm:text-base px-4">
                 The video you&apos;re looking for doesn&apos;t exist or is not
                 available.
               </p>
@@ -130,11 +133,10 @@ export default function PlayerPage() {
 
   return (
     <div className="min-h-screen bg-background rounded-xl">
-      <Sidebar />
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-2 sm:p-6">
         <div className="max-w-6xl mx-auto">
           {/* Video Player */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             {video.status.transcode === "completed" &&
             video.playback.hlsMasterUrl ? (
               <HlsVideoPlayer
@@ -171,13 +173,15 @@ export default function PlayerPage() {
             )}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Video Info */}
               <div>
-                <h1 className="text-2xl font-bold mb-2">{video.title}</h1>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+                <h1 className="text-xl sm:text-2xl font-bold mb-2">
+                  {video.title}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-4">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     {formatDuration(video.duration)}
@@ -208,15 +212,17 @@ export default function PlayerPage() {
                   )}
                 </div>
                 {video.description && (
-                  <p className="text-muted-foreground">{video.description}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    {video.description}
+                  </p>
                 )}
               </div>
 
               {/* Channel Info */}
-              <Card className="py-4">
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16">
+              <Card className="py-3 sm:py-4">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                       <AvatarImage
                         src={video.relations?.channel?.avatarUrl || ""}
                         alt={video.relations?.channel?.name || "Channel"}
@@ -228,13 +234,13 @@ export default function PlayerPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/channel/${
                             video.relations?.channel?.id || ""
                           }`}
                         >
-                          <h3 className="font-semibold text-xl hover:text-primary cursor-pointer">
+                          <h3 className="font-semibold text-base sm:text-xl hover:text-primary cursor-pointer">
                             {video.relations?.channel?.name ||
                               "Unknown Channel"}
                           </h3>

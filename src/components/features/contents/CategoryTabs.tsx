@@ -12,21 +12,21 @@ interface Category {
 }
 
 const categories: Category[] = [
-  { id: "learning", name: "Learning Activities", isActive: true },
-  { id: "events", name: "University Events" },
-  { id: "research", name: "Research & Projects" },
+  { id: "learning", name: "Trending", isActive: true },
+  { id: "events", name: "Latest" },
+  { id: "research", name: "Most Viewed" },
 ];
 
 const learningCategories = [
   "Computer Science",
-  "Engineering", 
+  "Engineering",
   "Mathematics",
   "Physics",
   "Chemistry",
   "Biology",
   "Language Studies",
   "Business",
-  "Data Science"
+  "Data Science",
 ];
 
 const eventCategories = [
@@ -37,7 +37,7 @@ const eventCategories = [
   "Cultural Events",
   "Graduation",
   "Orientation",
-  "Guest Lectures"
+  "Guest Lectures",
 ];
 
 const researchCategories = [
@@ -47,12 +47,13 @@ const researchCategories = [
   "Lab Sessions",
   "Group Projects",
   "Innovation Fair",
-  "Academic Conference"
+  "Academic Conference",
 ];
 
 export default function CategoryTabs() {
   const [activeCategory, setActiveCategory] = useState("learning");
-  const [activeSubcategory, setActiveSubcategory] = useState("Computer Science");
+  const [activeSubcategory, setActiveSubcategory] =
+    useState("Computer Science");
 
   // Get the appropriate subcategories based on active category
   const getSubcategories = useCallback(() => {
@@ -83,18 +84,20 @@ export default function CategoryTabs() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Main Categories */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-foreground">Categories</span>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <span className="text-xs sm:text-sm font-medium text-foreground">
+          Categories
+        </span>
+        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
           {categories.map((category) => (
             <Button
               key={category.id}
               variant={activeCategory === category.id ? "default" : "secondary"}
               size="sm"
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
                 activeCategory === category.id
                   ? "bg-primary text-background hover:bg-primary/85"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -105,26 +108,17 @@ export default function CategoryTabs() {
             </Button>
           ))}
         </div>
-        
-        {/* More Options */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="rounded-full p-2 text-muted-foreground hover:text-foreground"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Subcategories */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex scrollbar-hide gap-2 overflow-x-auto pb-2 sm:pb-0">
         {subcategories.map((subcategory) => (
           <Button
             key={subcategory}
             variant={activeSubcategory === subcategory ? "default" : "outline"}
             size="sm"
             className={cn(
-              "rounded-full px-4 py-2 text-sm transition-colors",
+              "rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors whitespace-nowrap",
               activeSubcategory === subcategory
                 ? "bg-black text-white hover:bg-black/90"
                 : "border-border bg-background text-foreground hover:bg-muted"

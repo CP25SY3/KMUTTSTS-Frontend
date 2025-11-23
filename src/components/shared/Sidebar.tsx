@@ -84,7 +84,7 @@ export default function Sidebar({
     <aside
       role="navigation"
       aria-label="Primary"
-      className={`${positionClass} left-0 h-[calc(100vh-2rem)] w-[72px] shrink-0 m-4 rounded-2xl bg-background shadow-lg`}
+      className={`${positionClass} left-0 h-[calc(100vh-2rem)] w-[72px] shrink-0 m-4 rounded-2xl bg-background shadow-lg z-50`}
       style={position === "fixed" ? { left: leftOffset } : undefined}
     >
       <div className="flex h-full flex-col items-center gap-3 py-3">

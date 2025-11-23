@@ -79,7 +79,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex">
+    <main className="min-h-screen flex flex-col lg:flex-row">
       <div className="hidden lg:flex flex-1 relative">
         <Image
           src="/login.png"
@@ -89,16 +89,16 @@ export default function LoginPage() {
           priority
         />
       </div>
-      <div className="p-4 absolute top-0 right-0">
+      <div className="p-4 absolute top-0 right-0 z-10">
         <ModeToggle />
       </div>
-      <div className="flex flex-1 justify-center items-center p-6">
-        <div className="w-full max-w-md space-y-6">
-          <h1 className="text-2xl font-bold text-center">
+      <div className="flex flex-1 justify-center items-center p-4 sm:p-6">
+        <div className="w-full max-w-md space-y-4 sm:space-y-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-center">
             Sign in to KMUTT Station
           </h1>
 
-          <form className="space-y-4" onSubmit={onSubmit}>
+          <form className="space-y-3 sm:space-y-4" onSubmit={onSubmit}>
             <div>
               <label htmlFor="email" className="sr-only">
                 Email
