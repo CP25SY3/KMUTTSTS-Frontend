@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, {
   forwardRef,
@@ -7,8 +7,8 @@ import React, {
   useRef,
   useState,
   useCallback,
-} from 'react';
-import Hls from 'hls.js';
+} from "react";
+import Hls from "hls.js";
 import {
   Play,
   Pause,
@@ -17,19 +17,19 @@ import {
   Maximize,
   Minimize,
   Settings,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import { mediaURL } from '@/utils';
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { mediaURL } from "@/utils";
 
 export type QualityPreference =
-  | 'auto'
+  | "auto"
   | { levelIndex: number }
   | { height: number };
 
@@ -39,7 +39,7 @@ export type HlsVideoPlayerProps = {
   autoPlay?: boolean;
   muted?: boolean;
   playsInline?: boolean;
-  preload?: 'none' | 'metadata' | 'auto';
+  preload?: "none" | "metadata" | "auto";
   initialQuality?: QualityPreference;
   className?: string;
   videoClassName?: string;
@@ -57,10 +57,7 @@ export type HlsVideoPlayerProps = {
     height?: number;
     bitrateKbps?: number;
   }) => void;
-  onStats?: (payload: {
-    bandwidthKbps?: number;
-    bufferSec?: number;
-  }) => void;
+  onStats?: (payload: { bandwidthKbps?: number; bufferSec?: number }) => void;
 };
 
 export type HlsVideoPlayerHandle = {
@@ -92,8 +89,8 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       autoPlay = false,
       muted = false,
       playsInline = true,
-      preload = 'metadata',
-      initialQuality = 'auto',
+      preload = "metadata",
+      initialQuality = "auto",
       className,
       videoClassName,
       controlsClassName,
@@ -140,26 +137,26 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
 
     // Check for native HLS support
     const checkNativeHlsSupport = useCallback(() => {
-      const video = document.createElement('video');
-      return video.canPlayType('application/vnd.apple.mpegurl') !== '';
+      const video = document.createElement("video");
+      return video.canPlayType("application/vnd.apple.mpegurl") !== "";
     }, []);
 
     // Check for HEVC/H.265 support
     const checkHEVCSupport = useCallback(() => {
-      const video = document.createElement('video');
-      
+      const video = document.createElement("video");
+
       // Test different HEVC codec profiles
       const codecTests = [
-        'video/mp4; codecs="hvc1.1.6.L93.B0"',  // Main profile
-        'video/mp4; codecs="hev1.1.6.L93.B0"',  // Alternative format
-        'video/mp4; codecs="hvc1"',              // Basic
+        'video/mp4; codecs="hvc1.1.6.L93.B0"', // Main profile
+        'video/mp4; codecs="hev1.1.6.L93.B0"', // Alternative format
+        'video/mp4; codecs="hvc1"', // Basic
       ];
-      
-      const support = codecTests.some(codec => 
-        video.canPlayType(codec) !== ''
+
+      const support = codecTests.some(
+        (codec) => video.canPlayType(codec) !== ""
       );
-      
-      console.log('HEVC Support detected:', support);
+
+      console.log("HEVC Support detected:", support);
       return support;
     }, []);
 
@@ -167,12 +164,12 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
     const formatTime = useCallback((time: number) => {
       const minutes = Math.floor(time / 60);
       const seconds = Math.floor(time % 60);
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     }, []);
 
     // Format bitrate helper
     const formatBitrate = useCallback((bitrate?: number) => {
-      if (!bitrate) return '';
+      if (!bitrate) return "";
       return ` (${Math.round(bitrate / 1000)} kbps)`;
     }, []);
 
@@ -204,11 +201,11 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       const isNative = checkNativeHlsSupport();
       const hasHEVCSupport = checkHEVCSupport();
       setIsNativeHls(isNative);
-      
-      console.log('Player initialization:', {
+
+      console.log("Player initialization:", {
         isNativeHLS: isNative,
         hasHEVCSupport,
-        src
+        src,
       });
 
       if (isNative) {
@@ -274,19 +271,21 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
           setSelectedQuality(hls.currentLevel);
 
           // Apply initial quality preference
-          if (initialQuality !== 'auto') {
-            if (typeof initialQuality === 'object') {
-              if ('levelIndex' in initialQuality) {
+          if (initialQuality !== "auto") {
+            if (typeof initialQuality === "object") {
+              if ("levelIndex" in initialQuality) {
                 const { levelIndex } = initialQuality;
                 if (levelIndex >= 0 && levelIndex < hls.levels.length) {
                   hls.currentLevel = levelIndex;
                 }
-              } else if ('height' in initialQuality) {
+              } else if ("height" in initialQuality) {
                 const { height } = initialQuality;
-                const closestLevel = levels.find((l) => l.height === height) ||
+                const closestLevel =
+                  levels.find((l) => l.height === height) ||
                   levels.reduce((prev, curr) => {
                     if (!prev.height || !curr.height) return prev;
-                    return Math.abs(curr.height - height) < Math.abs(prev.height - height)
+                    return Math.abs(curr.height - height) <
+                      Math.abs(prev.height - height)
                       ? curr
                       : prev;
                   });
@@ -308,7 +307,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
           // Quality switch completed
           setIsSwitchingQuality(false);
-          
+
           // Only update selectedQuality if we're in auto mode
           // In manual mode, it's already set by setQualityLevel
           if (hls.currentLevel === -1 || hls.autoLevelEnabled) {
@@ -326,42 +325,57 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         });
 
         hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error('HLS error:', data);
-          
+          console.error("HLS error:", data);
+
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.MEDIA_ERROR:
                 // Check for codec-related issues
-                if (data.details === Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR) {
+                if (
+                  data.details ===
+                  Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR
+                ) {
                   const hasHEVCSupport = checkHEVCSupport();
                   if (!hasHEVCSupport) {
-                    setError('H.265/HEVC codec not supported. Please try a different browser with hardware acceleration enabled, or use Chrome 107+ / Edge 107+.');
+                    setError(
+                      "H.265/HEVC codec not supported. Please try a different browser with hardware acceleration enabled, or use Chrome 107+ / Edge 107+."
+                    );
                   } else {
-                    setError('Video codec incompatible. The video format may not be supported.');
+                    setError(
+                      "Video codec incompatible. The video format may not be supported."
+                    );
                   }
-                } else if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-                  setError('Video playback stalled. This may be due to insufficient hardware decoding support for H.265.');
+                } else if (
+                  data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR
+                ) {
+                  setError(
+                    "Video playback stalled. This may be due to insufficient hardware decoding support for H.265."
+                  );
                 } else {
                   // Try to recover from media errors
-                  console.log('Attempting to recover from media error...');
+                  console.log("Attempting to recover from media error...");
                   hls.recoverMediaError();
                 }
                 break;
               case Hls.ErrorTypes.NETWORK_ERROR:
-                setError('Network error occurred. Please check your connection.');
+                setError(
+                  "Network error occurred. Please check your connection."
+                );
                 break;
               default:
-                setError('A fatal error occurred during playback. This may be due to codec compatibility issues.');
+                setError(
+                  "A fatal error occurred during playback. This may be due to codec compatibility issues."
+                );
                 hls.destroy();
                 break;
             }
           }
-          
+
           onError?.(data);
         });
       } else {
-        setError('HLS is not supported in this browser.');
-        onError?.(new Error('HLS not supported'));
+        setError("HLS is not supported in this browser.");
+        onError?.(new Error("HLS not supported"));
       }
     }, [
       src,
@@ -387,10 +401,12 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
             const bandwidthKbps = hls.bandwidthEstimate
               ? Math.round(hls.bandwidthEstimate / 1000)
               : undefined;
-            
+
             let bufferSec = 0;
             if (video.buffered.length > 0) {
-              bufferSec = video.buffered.end(video.buffered.length - 1) - video.currentTime;
+              bufferSec =
+                video.buffered.end(video.buffered.length - 1) -
+                video.currentTime;
             }
 
             onStats({ bandwidthKbps, bufferSec });
@@ -439,24 +455,24 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         setIsMuted(video.muted);
       };
 
-      video.addEventListener('loadstart', handleLoadStart);
-      video.addEventListener('canplay', handleCanPlay);
-      video.addEventListener('play', handlePlay);
-      video.addEventListener('pause', handlePause);
-      video.addEventListener('ended', handleEnded);
-      video.addEventListener('timeupdate', handleTimeUpdate);
-      video.addEventListener('durationchange', handleDurationChange);
-      video.addEventListener('volumechange', handleVolumeChange);
+      video.addEventListener("loadstart", handleLoadStart);
+      video.addEventListener("canplay", handleCanPlay);
+      video.addEventListener("play", handlePlay);
+      video.addEventListener("pause", handlePause);
+      video.addEventListener("ended", handleEnded);
+      video.addEventListener("timeupdate", handleTimeUpdate);
+      video.addEventListener("durationchange", handleDurationChange);
+      video.addEventListener("volumechange", handleVolumeChange);
 
       return () => {
-        video.removeEventListener('loadstart', handleLoadStart);
-        video.removeEventListener('canplay', handleCanPlay);
-        video.removeEventListener('play', handlePlay);
-        video.removeEventListener('pause', handlePause);
-        video.removeEventListener('ended', handleEnded);
-        video.removeEventListener('timeupdate', handleTimeUpdate);
-        video.removeEventListener('durationchange', handleDurationChange);
-        video.removeEventListener('volumechange', handleVolumeChange);
+        video.removeEventListener("loadstart", handleLoadStart);
+        video.removeEventListener("canplay", handleCanPlay);
+        video.removeEventListener("play", handlePlay);
+        video.removeEventListener("pause", handlePause);
+        video.removeEventListener("ended", handleEnded);
+        video.removeEventListener("timeupdate", handleTimeUpdate);
+        video.removeEventListener("durationchange", handleDurationChange);
+        video.removeEventListener("volumechange", handleVolumeChange);
       };
     }, [onPlay, onPause, onEnded]);
 
@@ -465,15 +481,19 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       const handleFullscreenChange = () => {
         const isNowFullscreen = !!document.fullscreenElement;
         setIsFullscreen(isNowFullscreen);
-        
+
         // When entering fullscreen, show controls initially
         if (isNowFullscreen) {
           setShowControls(true);
         }
       };
 
-      document.addEventListener('fullscreenchange', handleFullscreenChange);
-      return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
+      return () =>
+        document.removeEventListener(
+          "fullscreenchange",
+          handleFullscreenChange
+        );
     }, []);
 
     // Mouse inactivity handler for fullscreen
@@ -509,15 +529,15 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
 
       const container = containerRef.current;
       if (container) {
-        container.addEventListener('mousemove', handleMouseMove);
-        container.addEventListener('mouseleave', handleMouseLeave);
-        
+        container.addEventListener("mousemove", handleMouseMove);
+        container.addEventListener("mouseleave", handleMouseLeave);
+
         // Set initial timeout
         handleMouseMove();
-        
+
         return () => {
-          container.removeEventListener('mousemove', handleMouseMove);
-          container.removeEventListener('mouseleave', handleMouseLeave);
+          container.removeEventListener("mousemove", handleMouseMove);
+          container.removeEventListener("mouseleave", handleMouseLeave);
           if (mouseInactivityTimeoutRef.current) {
             clearTimeout(mouseInactivityTimeoutRef.current);
           }
@@ -537,7 +557,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
           video.pause();
         }
       } catch (error) {
-        console.error('Play/pause error:', error);
+        console.error("Play/pause error:", error);
       }
     }, []);
 
@@ -561,7 +581,10 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
     const seekRelative = useCallback((seconds: number) => {
       const video = videoRef.current;
       if (!video) return;
-      video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+      video.currentTime = Math.max(
+        0,
+        Math.min(video.duration, video.currentTime + seconds)
+      );
     }, []);
 
     const adjustVolume = useCallback((delta: number) => {
@@ -572,33 +595,36 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       video.muted = newVolume === 0;
     }, []);
 
-    const handleVideoClick = useCallback((e: React.MouseEvent) => {
-      // Prevent triggering play/pause when clicking on controls
-      if ((e.target as HTMLElement).closest('.video-controls')) {
-        return;
-      }
-
-      // Increment click count
-      clickCountRef.current += 1;
-
-      // Clear any existing timeout
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
-
-      // Wait to see if it's a double click
-      clickTimeoutRef.current = setTimeout(() => {
-        if (clickCountRef.current === 1) {
-          // Single click - toggle play/pause
-          togglePlayPause();
-        } else if (clickCountRef.current === 2) {
-          // Double click - toggle fullscreen
-          toggleFullscreen();
+    const handleVideoClick = useCallback(
+      (e: React.MouseEvent) => {
+        // Prevent triggering play/pause when clicking on controls
+        if ((e.target as HTMLElement).closest(".video-controls")) {
+          return;
         }
-        // Reset click count
-        clickCountRef.current = 0;
-      }, 250); // Wait 250ms to distinguish between single and double click
-    }, [togglePlayPause, toggleFullscreen]);
+
+        // Increment click count
+        clickCountRef.current += 1;
+
+        // Clear any existing timeout
+        if (clickTimeoutRef.current) {
+          clearTimeout(clickTimeoutRef.current);
+        }
+
+        // Wait to see if it's a double click
+        clickTimeoutRef.current = setTimeout(() => {
+          if (clickCountRef.current === 1) {
+            // Single click - toggle play/pause
+            togglePlayPause();
+          } else if (clickCountRef.current === 2) {
+            // Double click - toggle fullscreen
+            toggleFullscreen();
+          }
+          // Reset click count
+          clickCountRef.current = 0;
+        }, 250); // Wait 250ms to distinguish between single and double click
+      },
+      [togglePlayPause, toggleFullscreen]
+    );
 
     const handleKeyboardToggle = useCallback(() => {
       // Simple debounce for rapid keyboard presses
@@ -608,7 +634,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
 
       // Set flag to prevent rapid key presses
       isKeyboardHandledRef.current = true;
-      
+
       // Clear any existing timeout
       if (keyboardTimeoutRef.current) {
         clearTimeout(keyboardTimeoutRef.current);
@@ -629,7 +655,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         if (!videoRef.current) return;
 
         const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
 
         // Prevent double triggering if the video element is focused
         if (target === videoRef.current) {
@@ -638,41 +664,47 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         }
 
         switch (e.code) {
-          case 'Space':
-          case 'KeyK':
+          case "Space":
+          case "KeyK":
             e.preventDefault();
             handleKeyboardToggle();
             break;
-          case 'KeyM':
+          case "KeyM":
             e.preventDefault();
             toggleMute();
             break;
-          case 'KeyF':
+          case "KeyF":
             e.preventDefault();
             toggleFullscreen();
             break;
-          case 'ArrowLeft':
+          case "ArrowLeft":
             e.preventDefault();
             seekRelative(-5);
             break;
-          case 'ArrowRight':
+          case "ArrowRight":
             e.preventDefault();
             seekRelative(5);
             break;
-          case 'ArrowUp':
+          case "ArrowUp":
             e.preventDefault();
             adjustVolume(0.1); // Increase volume by 10%
             break;
-          case 'ArrowDown':
+          case "ArrowDown":
             e.preventDefault();
             adjustVolume(-0.1); // Decrease volume by 10%
             break;
         }
       };
 
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [handleKeyboardToggle, toggleMute, toggleFullscreen, seekRelative, adjustVolume]);
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [
+      handleKeyboardToggle,
+      toggleMute,
+      toggleFullscreen,
+      seekRelative,
+      adjustVolume,
+    ]);
 
     const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       const video = videoRef.current;
@@ -680,143 +712,180 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       video.currentTime = parseFloat(e.target.value);
     }, []);
 
-    const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      const video = videoRef.current;
-      if (!video) return;
-      const newVolume = parseFloat(e.target.value);
-      video.volume = newVolume;
-      video.muted = newVolume === 0;
-    }, []);
+    const handleVolumeChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const video = videoRef.current;
+        if (!video) return;
+        const newVolume = parseFloat(e.target.value);
+        video.volume = newVolume;
+        video.muted = newVolume === 0;
+      },
+      []
+    );
 
-    const setQualityLevel = useCallback((preference: QualityPreference) => {
-      const hls = hlsRef.current;
-      const video = videoRef.current;
-      if (!hls || !video || isNativeHls) return;
+    const setQualityLevel = useCallback(
+      (preference: QualityPreference) => {
+        const hls = hlsRef.current;
+        const video = videoRef.current;
+        if (!hls || !video || isNativeHls) return;
 
-      // Store current playback state
-      const wasPlaying = !video.paused;
-      const currentBufferInfo = hls.media?.buffered;
-      const hasEnoughBuffer = currentBufferInfo && currentBufferInfo.length > 0 && 
-        (currentBufferInfo.end(currentBufferInfo.length - 1) - video.currentTime) > 3;
+        // Store current playback state
+        const wasPlaying = !video.paused;
+        const currentBufferInfo = hls.media?.buffered;
+        const hasEnoughBuffer =
+          currentBufferInfo &&
+          currentBufferInfo.length > 0 &&
+          currentBufferInfo.end(currentBufferInfo.length - 1) -
+            video.currentTime >
+            3;
 
-      if (preference === 'auto') {
-        // Don't do anything if already in auto mode
-        if (selectedQuality === -1) return;
-        hls.currentLevel = -1;
-        setSelectedQuality(-1);
-      } else if (typeof preference === 'object') {
-        if ('levelIndex' in preference) {
-          const { levelIndex } = preference;
-          // Don't do anything if already manually selected at this level
-          if (selectedQuality === levelIndex) return;
-          if (levelIndex >= 0 && levelIndex < hls.levels.length) {
-            // If switching from auto to manual at the same level that's already playing,
-            // just update the UI state without changing HLS level
-            if (selectedQuality === -1 && actualPlayingLevel === levelIndex) {
-              setSelectedQuality(levelIndex);
-            } else {
-              // For H.265 content, use smoother switching strategy
-              setIsSwitchingQuality(true);
-              
-              // Pre-load next level for smoother transition
-              hls.nextLevel = levelIndex;
-              
-              // Wait a tick to ensure nextLevel is set, then switch
-              setTimeout(() => {
-                hls.currentLevel = levelIndex;
-                setSelectedQuality(levelIndex);
-                
-                // If we have enough buffer and was playing, keep playing smoothly
-                if (wasPlaying && hasEnoughBuffer) {
-                  // Let the player continue without interruption
-                  video.play().catch(err => console.error('Resume playback error:', err));
-                } else if (wasPlaying) {
-                  // Wait for some buffer before resuming for smoother H.265 playback
-                  const waitForBuffer = () => {
-                    const newBufferInfo = hls.media?.buffered;
-                    if (newBufferInfo && newBufferInfo.length > 0) {
-                      const bufferAhead = newBufferInfo.end(newBufferInfo.length - 1) - video.currentTime;
-                      if (bufferAhead > 2) {
-                        video.play().catch(err => console.error('Resume playback error:', err));
-                      } else {
-                        setTimeout(waitForBuffer, 100);
-                      }
-                    }
-                  };
-                  waitForBuffer();
-                }
-              }, 50);
-            }
-          }
-        } else if ('height' in preference) {
-          const { height } = preference;
-          const level = qualityLevels.find((l) => l.height === height);
-          if (level) {
+        if (preference === "auto") {
+          // Don't do anything if already in auto mode
+          if (selectedQuality === -1) return;
+          hls.currentLevel = -1;
+          setSelectedQuality(-1);
+        } else if (typeof preference === "object") {
+          if ("levelIndex" in preference) {
+            const { levelIndex } = preference;
             // Don't do anything if already manually selected at this level
-            if (selectedQuality === level.index) return;
-            // If switching from auto to manual at the same level that's already playing,
-            // just update the UI state without changing HLS level
-            if (selectedQuality === -1 && actualPlayingLevel === level.index) {
-              setSelectedQuality(level.index);
-            } else {
-              // For H.265 content, use smoother switching strategy
-              setIsSwitchingQuality(true);
-              
-              // Pre-load next level for smoother transition
-              hls.nextLevel = level.index;
-              
-              // Wait a tick to ensure nextLevel is set, then switch
-              setTimeout(() => {
-                hls.currentLevel = level.index;
-                setSelectedQuality(level.index);
-                
-                // If we have enough buffer and was playing, keep playing smoothly
-                if (wasPlaying && hasEnoughBuffer) {
-                  // Let the player continue without interruption
-                  video.play().catch(err => console.error('Resume playback error:', err));
-                } else if (wasPlaying) {
-                  // Wait for some buffer before resuming for smoother H.265 playback
-                  const waitForBuffer = () => {
-                    const newBufferInfo = hls.media?.buffered;
-                    if (newBufferInfo && newBufferInfo.length > 0) {
-                      const bufferAhead = newBufferInfo.end(newBufferInfo.length - 1) - video.currentTime;
-                      if (bufferAhead > 2) {
-                        video.play().catch(err => console.error('Resume playback error:', err));
-                      } else {
-                        setTimeout(waitForBuffer, 100);
+            if (selectedQuality === levelIndex) return;
+            if (levelIndex >= 0 && levelIndex < hls.levels.length) {
+              // If switching from auto to manual at the same level that's already playing,
+              // just update the UI state without changing HLS level
+              if (selectedQuality === -1 && actualPlayingLevel === levelIndex) {
+                setSelectedQuality(levelIndex);
+              } else {
+                // For H.265 content, use smoother switching strategy
+                setIsSwitchingQuality(true);
+
+                // Pre-load next level for smoother transition
+                hls.nextLevel = levelIndex;
+
+                // Wait a tick to ensure nextLevel is set, then switch
+                setTimeout(() => {
+                  hls.currentLevel = levelIndex;
+                  setSelectedQuality(levelIndex);
+
+                  // If we have enough buffer and was playing, keep playing smoothly
+                  if (wasPlaying && hasEnoughBuffer) {
+                    // Let the player continue without interruption
+                    video
+                      .play()
+                      .catch((err) =>
+                        console.error("Resume playback error:", err)
+                      );
+                  } else if (wasPlaying) {
+                    // Wait for some buffer before resuming for smoother H.265 playback
+                    const waitForBuffer = () => {
+                      const newBufferInfo = hls.media?.buffered;
+                      if (newBufferInfo && newBufferInfo.length > 0) {
+                        const bufferAhead =
+                          newBufferInfo.end(newBufferInfo.length - 1) -
+                          video.currentTime;
+                        if (bufferAhead > 2) {
+                          video
+                            .play()
+                            .catch((err) =>
+                              console.error("Resume playback error:", err)
+                            );
+                        } else {
+                          setTimeout(waitForBuffer, 100);
+                        }
                       }
-                    }
-                  };
-                  waitForBuffer();
-                }
-              }, 50);
+                    };
+                    waitForBuffer();
+                  }
+                }, 50);
+              }
+            }
+          } else if ("height" in preference) {
+            const { height } = preference;
+            const level = qualityLevels.find((l) => l.height === height);
+            if (level) {
+              // Don't do anything if already manually selected at this level
+              if (selectedQuality === level.index) return;
+              // If switching from auto to manual at the same level that's already playing,
+              // just update the UI state without changing HLS level
+              if (
+                selectedQuality === -1 &&
+                actualPlayingLevel === level.index
+              ) {
+                setSelectedQuality(level.index);
+              } else {
+                // For H.265 content, use smoother switching strategy
+                setIsSwitchingQuality(true);
+
+                // Pre-load next level for smoother transition
+                hls.nextLevel = level.index;
+
+                // Wait a tick to ensure nextLevel is set, then switch
+                setTimeout(() => {
+                  hls.currentLevel = level.index;
+                  setSelectedQuality(level.index);
+
+                  // If we have enough buffer and was playing, keep playing smoothly
+                  if (wasPlaying && hasEnoughBuffer) {
+                    // Let the player continue without interruption
+                    video
+                      .play()
+                      .catch((err) =>
+                        console.error("Resume playback error:", err)
+                      );
+                  } else if (wasPlaying) {
+                    // Wait for some buffer before resuming for smoother H.265 playback
+                    const waitForBuffer = () => {
+                      const newBufferInfo = hls.media?.buffered;
+                      if (newBufferInfo && newBufferInfo.length > 0) {
+                        const bufferAhead =
+                          newBufferInfo.end(newBufferInfo.length - 1) -
+                          video.currentTime;
+                        if (bufferAhead > 2) {
+                          video
+                            .play()
+                            .catch((err) =>
+                              console.error("Resume playback error:", err)
+                            );
+                        } else {
+                          setTimeout(waitForBuffer, 100);
+                        }
+                      }
+                    };
+                    waitForBuffer();
+                  }
+                }, 50);
+              }
             }
           }
         }
-      }
-    }, [isNativeHls, qualityLevels, selectedQuality, actualPlayingLevel]);
+      },
+      [isNativeHls, qualityLevels, selectedQuality, actualPlayingLevel]
+    );
 
     // Imperative handle
-    useImperativeHandle(ref, () => ({
-      play: async () => {
-        const video = videoRef.current;
-        if (video) {
-          return video.play();
-        }
-        return Promise.reject(new Error('Video element not available'));
-      },
-      pause: () => {
-        const video = videoRef.current;
-        if (video) {
-          video.pause();
-        }
-      },
-      toggleMute,
-      setQuality: setQualityLevel,
-      getCurrentLevel: () => selectedQuality,
-      getLevels: () => qualityLevels,
-      getVideoElement: () => videoRef.current,
-    }), [toggleMute, setQualityLevel, selectedQuality, qualityLevels]);
+    useImperativeHandle(
+      ref,
+      () => ({
+        play: async () => {
+          const video = videoRef.current;
+          if (video) {
+            return video.play();
+          }
+          return Promise.reject(new Error("Video element not available"));
+        },
+        pause: () => {
+          const video = videoRef.current;
+          if (video) {
+            video.pause();
+          }
+        },
+        toggleMute,
+        setQuality: setQualityLevel,
+        getCurrentLevel: () => selectedQuality,
+        getLevels: () => qualityLevels,
+        getVideoElement: () => videoRef.current,
+      }),
+      [toggleMute, setQualityLevel, selectedQuality, qualityLevels]
+    );
 
     // Cleanup
     useEffect(() => {
@@ -841,25 +910,32 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
 
     if (error) {
       return (
-        <div className={cn('relative rounded-lg bg-muted p-8 text-center', className)}>
-          <div className="text-destructive text-sm font-medium mb-2">Playback Error</div>
+        <div
+          className={cn(
+            "relative rounded-lg bg-muted p-8 text-center",
+            className
+          )}
+        >
+          <div className="text-destructive text-sm font-medium mb-2">
+            Playback Error
+          </div>
           <div className="text-muted-foreground text-sm">{error}</div>
         </div>
       );
     }
 
     return (
-      <div 
-        ref={containerRef} 
-        className={cn('relative group', className)}
-        style={{ 
-          position: 'relative',
-          cursor: isFullscreen && !showControls ? 'none' : 'auto'
+      <div
+        ref={containerRef}
+        className={cn("relative group", className)}
+        style={{
+          position: "relative",
+          cursor: isFullscreen && !showControls ? "none" : "auto",
         }}
       >
         <video
           ref={videoRef}
-          className={cn('w-full h-full aspect-video', videoClassName)}
+          className={cn("w-full h-full aspect-video", videoClassName)}
           poster={mediaURL(poster)}
           autoPlay={autoPlay}
           muted={muted}
@@ -874,46 +950,56 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
             e.stopPropagation();
           }}
           style={{
-            cursor: isFullscreen && !showControls ? 'none' : 'auto',
+            cursor: isFullscreen && !showControls ? "none" : "auto",
           }}
-        >
-        </video>
+        ></video>
 
         {/* Click overlay for play/pause */}
-        <div 
+        <div
           className="absolute inset-0"
           onClick={handleVideoClick}
           tabIndex={-1}
           onFocus={(e) => e.target.blur()}
-          style={{ 
+          style={{
             zIndex: 1,
-            cursor: isFullscreen && !showControls ? 'none' : 'pointer'
+            cursor: isFullscreen && !showControls ? "none" : "pointer",
           }}
         />
 
         {/* Loading overlay */}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50" style={{ zIndex: 2 }}>
+          <div
+            className="absolute inset-0 flex items-center justify-center bg-black/50"
+            style={{ zIndex: 2 }}
+          >
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
           </div>
         )}
 
         {/* Quality switching indicator */}
         {isSwitchingQuality && !isLoading && (
-          <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/70 px-3 py-2 rounded-md text-white text-sm" style={{ zIndex: 2 }}>
+          <div
+            className="absolute top-4 right-4 flex items-center gap-2 bg-black/70 px-3 py-2 rounded-md text-white text-sm"
+            style={{ zIndex: 2 }}
+          >
             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
             <span>Switching quality...</span>
           </div>
         )}
 
         {/* Controls */}
-        <div className={cn(
-          'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity video-controls',
-          isFullscreen 
-            ? (showControls ? 'opacity-100' : 'opacity-0')
-            : 'opacity-0 group-hover:opacity-100',
-          controlsClassName
-        )} style={{ zIndex: 3 }}>
+        <div
+          className={cn(
+            "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity video-controls",
+            isFullscreen
+              ? showControls
+                ? "opacity-100"
+                : "opacity-0"
+              : "opacity-0 group-hover:opacity-100",
+            controlsClassName
+          )}
+          style={{ zIndex: 3 }}
+        >
           {/* Progress bar */}
           <div className="mb-3 relative">
             {/* Background track */}
@@ -922,14 +1008,16 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
               <div
                 className="absolute top-0 left-0 h-full bg-muted-foreground rounded-lg transition-all duration-300"
                 style={{
-                  width: duration > 0 ? `${(bufferedTime / duration) * 100}%` : '0%'
+                  width:
+                    duration > 0 ? `${(bufferedTime / duration) * 100}%` : "0%",
                 }}
               />
               {/* Current progress */}
               <div
                 className="absolute top-0 left-0 h-full bg-primary rounded-lg transition-all duration-150"
                 style={{
-                  width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%'
+                  width:
+                    duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
                 }}
               />
             </div>
@@ -953,9 +1041,13 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
                 size="icon"
                 onClick={togglePlayPause}
                 className="text-white hover:bg-white/20 focus-visible:ring-white/50"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
+                aria-label={isPlaying ? "Pause" : "Play"}
               >
-                {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                {isPlaying ? (
+                  <Pause className="w-5 h-5" />
+                ) : (
+                  <Play className="w-5 h-5" />
+                )}
               </Button>
 
               {/* Volume */}
@@ -965,7 +1057,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
                   size="icon"
                   onClick={toggleMute}
                   className="text-white hover:bg-white/20 focus-visible:ring-white/50"
-                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                  aria-label={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted || volume === 0 ? (
                     <VolumeX className="w-5 h-5" />
@@ -993,12 +1085,14 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
 
             <div className="flex items-center gap-2">
               {/* Debug info */}
-              {process.env.NODE_ENV === 'development' && (
+              {process.env.NODE_ENV === "development" && (
                 <span className="text-xs text-white/50">
-                  Native: {isNativeHls ? 'Y' : 'N'} | Levels: {qualityLevels.length} | Current: {actualPlayingLevel} | Selected: {selectedQuality}
+                  Native: {isNativeHls ? "Y" : "N"} | Levels:{" "}
+                  {qualityLevels.length} | Current: {actualPlayingLevel} |
+                  Selected: {selectedQuality}
                 </span>
               )}
-              
+
               {/* Quality selector */}
               {!isNativeHls && qualityLevels.length > 0 ? (
                 <DropdownMenu modal={false}>
@@ -1012,8 +1106,8 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
                       <Settings className="w-5 h-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
+                  <DropdownMenuContent
+                    align="end"
                     side="top"
                     className="bg-black/95 border-white/20 text-white min-w-[120px]"
                     style={{ zIndex: 9999 }}
@@ -1021,28 +1115,34 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
                     container={containerRef.current}
                   >
                     <DropdownMenuItem
-                      onSelect={() => setQualityLevel('auto')}
+                      onSelect={() => setQualityLevel("auto")}
                       className={cn(
-                        'text-white hover:bg-white/20 focus:bg-white/20 cursor-pointer',
-                        selectedQuality === -1 && 'bg-white/20'
+                        "text-white hover:bg-white/20 focus:bg-white/20 cursor-pointer",
+                        selectedQuality === -1 && "bg-white/20"
                       )}
                     >
                       Auto
-                      {selectedQuality === -1 && actualPlayingLevel >= 0 && (() => {
-                        const level = qualityLevels.find(l => l.index === actualPlayingLevel);
-                        if (level?.height) {
-                          return ` • ${level.height}p`;
-                        }
-                        return '';
-                      })()}
+                      {selectedQuality === -1 &&
+                        actualPlayingLevel >= 0 &&
+                        (() => {
+                          const level = qualityLevels.find(
+                            (l) => l.index === actualPlayingLevel
+                          );
+                          if (level?.height) {
+                            return ` • ${level.height}p`;
+                          }
+                          return "";
+                        })()}
                     </DropdownMenuItem>
                     {qualityLevels.map((level) => (
                       <DropdownMenuItem
                         key={level.index}
-                        onSelect={() => setQualityLevel({ levelIndex: level.index })}
+                        onSelect={() =>
+                          setQualityLevel({ levelIndex: level.index })
+                        }
                         className={cn(
-                          'text-white hover:bg-white/20 focus:bg-white/20 cursor-pointer',
-                          selectedQuality === level.index && 'bg-white/20'
+                          "text-white hover:bg-white/20 focus:bg-white/20 cursor-pointer",
+                          selectedQuality === level.index && "bg-white/20"
                         )}
                       >
                         {level.label}
@@ -1062,7 +1162,9 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
                 size="icon"
                 onClick={toggleFullscreen}
                 className="text-white hover:bg-white/20 focus-visible:ring-white/50"
-                aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                aria-label={
+                  isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                }
               >
                 {isFullscreen ? (
                   <Minimize className="w-5 h-5" />
@@ -1078,6 +1180,6 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
   }
 );
 
-HlsVideoPlayer.displayName = 'HlsVideoPlayer';
+HlsVideoPlayer.displayName = "HlsVideoPlayer";
 
 export default HlsVideoPlayer;

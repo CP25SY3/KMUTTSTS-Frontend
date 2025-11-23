@@ -14,6 +14,16 @@ export type StrapiUser = {
 };
 
 export type LoginResponse = {
-    jwt: string;
-    user: StrapiUser;
+  jwt: string;
+  user: StrapiUser;
+};
+
+export type MicrosoftAuthResponse = {
+  accessToken: string;
+  idToken: string;
+  account: {
+    username: string;
+    name: string;
+    localAccountId: string;
+  };
 };

@@ -1,4 +1,8 @@
-import { CategoryTabs, MockContentsGrid, ContentsInfiniteScroll } from "@/components/features/contents";
+import {
+  CategoryTabs,
+  MockContentsGrid,
+  ContentsInfiniteScroll,
+} from "@/components/features/contents";
 
 export default function MainPage() {
   // Use theme context for dynamic styling
