@@ -107,10 +107,7 @@ export const DEFAULT_ALLOWED_TYPES = [
 
 export const DEFAULT_ALLOWED_AUDIO_TYPES = [
   'audio/mpeg',
-  'audio/wav',
-  'audio/ogg',
-  'audio/m4a',
-  'audio/mp4'
+  'audio/mp3'
 ];
 
 export const DEFAULT_ALLOWED_THUMBNAIL_TYPES = [
