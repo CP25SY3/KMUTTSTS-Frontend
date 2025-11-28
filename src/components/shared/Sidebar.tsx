@@ -9,7 +9,7 @@ import {
   Clock,
   Download,
   Settings,
-  LogOut,
+  LogOut,CloudUpload
 } from "lucide-react";
 import { useLogout } from "@/api/features/auth/authHooks";
 import { msalInstance } from "@/lib/msalConfig";
@@ -30,6 +30,7 @@ type SidebarProps = {
 
 const DEFAULT_ITEMS: Item[] = [
   { icon: <Home size={20} />, href: "#", label: "Home", active: true },
+  { icon: <CloudUpload size={20} />, href: "#", label: "Upload",  },
   { icon: <TrendingUp size={20} />, href: "#", label: "Trending" },
   { icon: <Clock size={20} />, href: "#", label: "History" },
   { icon: <Download size={20} />, href: "#", label: "Downloads" },

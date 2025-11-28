@@ -62,6 +62,7 @@ export interface VideoUploadFormProps {
   authToken?: string;
   maxSizeBytes?: number;
   allowedTypes?: string[];
+  allowedAudioTypes?: string[];
   maxThumbnailSizeBytes?: number;
   allowedThumbnailTypes?: string[];
   defaultVisibility?: 'public' | 'authenticated' | 'staff';
@@ -83,6 +84,7 @@ export interface UploadProgressCardProps {
 export interface VideoFormData {
   title: string;
   description: string;
+  type: 'video' | 'audio';
   visibility: 'public' | 'authenticated' | 'staff';
   tags: string;
 }
@@ -101,6 +103,14 @@ export const DEFAULT_ALLOWED_TYPES = [
   'video/quicktime', 
   'video/x-matroska',
   'video/webm'
+];
+
+export const DEFAULT_ALLOWED_AUDIO_TYPES = [
+  'audio/mpeg',
+  'audio/wav',
+  'audio/ogg',
+  'audio/m4a',
+  'audio/mp4'
 ];
 
 export const DEFAULT_ALLOWED_THUMBNAIL_TYPES = [

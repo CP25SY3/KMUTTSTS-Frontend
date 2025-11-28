@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Upload, X, FileVideo, AlertCircle, ImageIcon } from "lucide-react";
+import { Upload, X, FileVideo, AlertCircle, ImageIcon, AudioLines } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import type {
 } from "@/types/video-upload";
 import {
   DEFAULT_ALLOWED_TYPES,
+  DEFAULT_ALLOWED_AUDIO_TYPES,
   DEFAULT_MAX_SIZE_BYTES,
   DEFAULT_ALLOWED_THUMBNAIL_TYPES,
   DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
@@ -39,6 +40,7 @@ export function VideoUploadForm({
   channelId,
   maxSizeBytes = DEFAULT_MAX_SIZE_BYTES,
   allowedTypes = DEFAULT_ALLOWED_TYPES,
+  allowedAudioTypes = DEFAULT_ALLOWED_AUDIO_TYPES,
   maxThumbnailSizeBytes = DEFAULT_MAX_THUMBNAIL_SIZE_BYTES,
   allowedThumbnailTypes = DEFAULT_ALLOWED_THUMBNAIL_TYPES,
   defaultVisibility = "public",
@@ -64,6 +66,7 @@ export function VideoUploadForm({
   const [formData, setFormData] = useState<VideoFormData>({
     title: "",
     description: "",
+    type: "video",
     visibility: defaultVisibility,
     tags: "",
   });
@@ -101,8 +104,9 @@ export function VideoUploadForm({
   // File validation
   const validateFile = useCallback(
     (file: File): string | null => {
-      if (!allowedTypes.includes(file.type)) {
-        return `File type not supported. Allowed types: ${allowedTypes
+      const types = formData.type === 'video' ? allowedTypes : allowedAudioTypes;
+      if (!types.includes(file.type)) {
+        return `File type not supported. Allowed types: ${types
           .map((type) => type.split("/")[1])
           .join(", ")}`;
       }
@@ -114,7 +118,7 @@ export function VideoUploadForm({
 
       return null;
     },
-    [allowedTypes, maxSizeBytes]
+    [allowedTypes, allowedAudioTypes, maxSizeBytes, formData.type]
   );
 
   // Thumbnail validation
@@ -185,7 +189,7 @@ export function VideoUploadForm({
 
     // File validation
     if (!selectedFile) {
-      newErrors.file = "Please select a video file";
+      newErrors.file = `Please select a ${formData.type} file`;
     } else {
       const fileError = validateFile(selectedFile);
       if (fileError) {
@@ -347,6 +351,13 @@ export function VideoUploadForm({
     []
   );
 
+  // Handle type change
+  const handleTypeChange = useCallback((value: 'video' | 'audio') => {
+    setFormData(prev => ({ ...prev, type: value }));
+    setSelectedFile(null); // Clear file when type changes
+    setErrors(prev => ({ ...prev, file: undefined }));
+  }, []);
+
   // Remove selected file
   const removeFile = useCallback(() => {
     setSelectedFile(null);
@@ -391,7 +402,8 @@ export function VideoUploadForm({
           file: selectedFile,
           title: formData.title,
           description: formData.description || undefined,
-          type: "video",
+
+          type: formData.type,
           exclusiveTo,
           thumbnail: selectedThumbnail || undefined, // enable when backend accepts it
         };
@@ -477,7 +489,7 @@ export function VideoUploadForm({
   };
 
   const getAcceptAttribute = (): string => {
-    return allowedTypes.join(",");
+    return formData.type === 'video' ? allowedTypes.join(",") : allowedAudioTypes.join(",");
   };
 
   const getThumbnailAcceptAttribute = (): string => {
@@ -504,9 +516,26 @@ export function VideoUploadForm({
       {/* File Upload Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Video File</CardTitle>
+          <CardTitle>Select {formData.type === 'video' ? 'Video' : 'Audio'} File</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Content Type Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="contentType">Content Type</Label>
+            <Select
+              value={formData.type}
+              onValueChange={handleTypeChange}
+            >
+              <SelectTrigger id="contentType">
+                <SelectValue placeholder="Select content type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="video">Video</SelectItem>
+                <SelectItem value="audio">Audio</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {!selectedFile ? (
             <div
               className={cn(
@@ -523,15 +552,19 @@ export function VideoUploadForm({
               onKeyDown={handleKeyDown}
               role="button"
               tabIndex={0}
-              aria-label="Drop video file here or click to select"
+              aria-label={`Drop ${formData.type} file here or click to select`}
             >
-              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              {formData.type === 'video' ? (
+                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              ) : (
+                <AudioLines className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              )}
               <h3 className="text-lg font-medium mb-2">
-                Drop your video here or click to browse
+                Drop your {formData.type} here or click to browse
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Supported formats:{" "}
-                {allowedTypes
+                {(formData.type === 'video' ? allowedTypes : allowedAudioTypes)
                   .map((type) => type.split("/")[1].toUpperCase())
                   .join(", ")}
               </p>
@@ -541,7 +574,11 @@ export function VideoUploadForm({
             </div>
           ) : (
             <div className="flex items-center gap-4 p-4 border rounded-lg">
-              <FileVideo className="w-8 h-8 text-primary" />
+              {formData.type === 'video' ? (
+                <FileVideo className="w-8 h-8 text-primary" />
+              ) : (
+                <AudioLines className="w-8 h-8 text-primary" />
+              )}
               <div className="flex-1">
                 <p className="font-medium">{selectedFile.name}</p>
                 <p className="text-sm text-muted-foreground">
@@ -675,7 +712,7 @@ export function VideoUploadForm({
       {/* Metadata Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Video Details</CardTitle>
+          <CardTitle>{formData.type === 'video' ? 'Video' : 'Audio'} Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Title */}
@@ -689,7 +726,7 @@ export function VideoUploadForm({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 updateFormData("title", e.target.value)
               }
-              placeholder="Enter video title"
+              placeholder={`Enter ${formData.type} title`}
               maxLength={FIELD_LIMITS.TITLE_MAX}
               aria-describedby={errors.title ? "title-error" : undefined}
               aria-invalid={!!errors.title}
@@ -714,7 +751,7 @@ export function VideoUploadForm({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 updateFormData("description", e.target.value)
               }
-              placeholder="Enter video description (optional)"
+              placeholder={`Enter ${formData.type} description (optional)`}
               maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
               rows={3}
               aria-describedby={
@@ -797,7 +834,7 @@ export function VideoUploadForm({
           disabled={isSubmitting || !selectedFile}
           className="flex-1"
         >
-          {isSubmitting ? "Uploading..." : "Upload Video"}
+          {isSubmitting ? "Uploading..." : `Upload ${formData.type === 'video' ? 'Video' : 'Audio'}`}
         </Button>
         <Button
           type="button"
@@ -808,6 +845,7 @@ export function VideoUploadForm({
             setFormData({
               title: "",
               description: "",
+              type: "video",
               visibility: defaultVisibility,
               tags: "",
             });

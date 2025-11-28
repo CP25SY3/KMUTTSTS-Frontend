@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import HlsVideoPlayer, {
   HlsVideoPlayerHandle,
 } from "@/components/features/video_player/HlsVideoPlayer";
+import { AudioPlayer } from "@/components/features/audio_player/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -137,7 +138,16 @@ export default function PlayerPage() {
         <div className="max-w-6xl mx-auto">
           {/* Video Player */}
           <div className="mb-4 sm:mb-6">
-            {video.status.transcode === "completed" &&
+            {video.type === "audio" ? (
+                <AudioPlayer
+                  src={video.files?.source?.url || ""}
+                  title={video.title}
+                  artist={video.relations?.channel?.name || "Unknown Artist"}
+                  thumbnailUrl={video.files?.thumbnail?.url}
+                  duration={video.duration}
+                  onBack={() => window.history.back()}
+                />
+            ) : video.status.transcode === "completed" &&
             video.playback.hlsMasterUrl ? (
               <HlsVideoPlayer
                 ref={playerRef}
