@@ -23,15 +23,15 @@ export default function SearchBar({ config, onMenuClick }: SearchBarProps) {
   // Use theme context for dynamic styling
   // ...existing code...
   return (
-    <div className="flex flex-1 items-center justify-center w-full">
-      <div className="flex items-center justify-between px-2 sm:px-8 py-2 sm:py-4 w-full max-w-2xl gap-2">
+    <div className="flex flex-1 items-center justify-center">
+      <div className="flex items-center justify-between py-2 w-full gap-2">
         {/* Mobile Menu Button */}
         <button
           onClick={onMenuClick}
           className="lg:hidden rounded-full p-2 hover:bg-muted bg-background text-foreground"
           aria-label="Open menu"
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-5 w-5" />
         </button>
 
         {/* Search Input */}

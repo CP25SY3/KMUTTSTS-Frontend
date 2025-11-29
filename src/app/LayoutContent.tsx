@@ -43,7 +43,7 @@ export default function LayoutContent({
       </div>
 
       {/* Desktop: Normal layout with fixed sidebar */}
-      <div className="mx-auto flex lg:ml-[6rem] gap-4 px-2 sm:px-4 py-2 sm:py-4">
+      <div className="mx-auto flex lg:ml-[5rem] gap-4 px-2 sm:px-4 py-2 sm:py-4">
         {/* Sidebar - Hidden on mobile, shown on desktop */}
         <div className="hidden lg:block">
           <Sidebar />

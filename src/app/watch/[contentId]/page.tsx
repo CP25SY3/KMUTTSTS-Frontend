@@ -3,13 +3,13 @@
 import { useRef, useState, useEffect } from "react";
 import HlsVideoPlayer, {
   HlsVideoPlayerHandle,
-} from "@/components/features/video_player/HlsVideoPlayer";
-import { AudioPlayer } from "@/components/features/audio_player/AudioPlayer";
+} from "@/components/features/player/HlsVideoPlayer";
+import { AudioPlayer } from "@/components/features/player/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useContentDetail } from "@/api/features/player/playerHooks";
 import {
   Clock,
@@ -24,11 +24,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatDate, formatDuration, formatFileSize } from "@/utils";
+import ContentHeaderSection from "@/components/features/player/ContentHeaderSection";
 
 export default function PlayerPage() {
   const params = useParams<{ contentId: string }>();
   const contentId = params.contentId;
   const playerRef = useRef<HlsVideoPlayerHandle>(null);
+  const router = useRouter();
 
   // Determine if we should enable polling based on the current status
   const [shouldPoll, setShouldPoll] = useState(true);
@@ -133,11 +135,21 @@ export default function PlayerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background rounded-xl">
-      <div className="container mx-auto p-2 sm:p-6">
+    <div className="min-h-screen bg-background rounded-3xl">
+      <div
+        className="p-4 md:p-6"
+        {...(content.type === "audio" ? { hidden: true } : {})}
+      >
+        <ContentHeaderSection
+          onBack={() => router.back()}
+          title={content.title}
+          artist={content.relations?.channel?.name || "Unknown Artist"}
+        />
+      </div>
+      <div className="container mx-auto p-2 sm:p-2">
         <div className="max-w-6xl mx-auto">
           {/* Video Player */}
-          <div className="mb-4 sm:mb-6">
+          <div className="mb-6 p-0 md:p-4">
             {content.type === "audio" ? (
               <AudioPlayer
                 src={content.files?.source?.url || ""}
@@ -183,14 +195,11 @@ export default function PlayerPage() {
             )}
           </div>
 
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-3 p-4">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Video Info */}
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold mb-2" {...(content.type === "audio" ? { hidden: true } : {})}>
-                  {content.title}
-                </h1>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-4">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
@@ -229,44 +238,35 @@ export default function PlayerPage() {
               </div>
 
               {/* Channel Info */}
-              <Card className="py-3 sm:py-4">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
-                      <AvatarImage
+              <Link href={`/channel/${content.relations?.channel?.id}`}>
+                <div className="flex items-center gap-4 md:gap-6 py-4">
+                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
+                    <AvatarImage
                       className="object-cover"
-                        src={content.relations?.channel?.avatarUrl || ""}
-                        alt={content.relations?.channel?.name || "Channel"}
-                      />
-                      <AvatarFallback>
-                        {content.relations?.channel?.name
-                          ?.substring(0, 2)
-                          .toUpperCase() || "CH"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link
-                          href={`/channel/${
-                            content.relations?.channel?.id || ""
-                          }`}
-                        >
-                          <h3 className="font-semibold text-base sm:text-xl hover:text-primary cursor-pointer">
-                            {content.relations?.channel?.name ||
-                              "Unknown Channel"}
-                          </h3>
-                        </Link>
-                        {content.relations?.channel?.official && (
-                          <Badge variant="secondary" className="text-xs">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Official
-                          </Badge>
-                        )}
-                      </div>
+                      src={content.relations?.channel?.avatarUrl || ""}
+                      alt={content.relations?.channel?.name || "Channel"}
+                    />
+                    <AvatarFallback>
+                      {content.relations?.channel?.name
+                        ?.substring(0, 2)
+                        .toUpperCase() || "CH"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-base sm:text-xl hover:text-primary cursor-pointer">
+                        {content.relations?.channel?.name || "Unknown Channel"}
+                      </h3>
+                      {content.relations?.channel?.official && (
+                        <Badge variant="secondary" className="text-xs">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Official
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </Link>
             </div>
 
             {/* Sidebar Content */}
@@ -406,8 +406,7 @@ export default function PlayerPage() {
                         rel="noopener noreferrer"
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        Source (
-                        {formatFileSize(content.files.source.size)})
+                        Source ({formatFileSize(content.files.source.size)})
                       </a>
                     </Button>
                     <Button
