@@ -26,8 +26,8 @@ import Link from "next/link";
 import { formatDate, formatDuration, formatFileSize } from "@/utils";
 
 export default function PlayerPage() {
-  const params = useParams<{ videoId: string }>();
-  const contentId = params.videoId;
+  const params = useParams<{ contentId: string }>();
+  const contentId = params.contentId;
   const playerRef = useRef<HlsVideoPlayerHandle>(null);
 
   // Determine if we should enable polling based on the current status
@@ -57,7 +57,7 @@ export default function PlayerPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content?.status?.transcode]);
+  }, [content, error]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -188,7 +188,7 @@ export default function PlayerPage() {
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Video Info */}
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold mb-2">
+                <h1 className="text-xl sm:text-2xl font-bold mb-2" {...(content.type === "audio" ? { hidden: true } : {})}>
                   {content.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-4">
@@ -234,6 +234,7 @@ export default function PlayerPage() {
                   <div className="flex items-center gap-3 sm:gap-4">
                     <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                       <AvatarImage
+                      className="object-cover"
                         src={content.relations?.channel?.avatarUrl || ""}
                         alt={content.relations?.channel?.name || "Channel"}
                       />
@@ -405,7 +406,7 @@ export default function PlayerPage() {
                         rel="noopener noreferrer"
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        Source Video (
+                        Source (
                         {formatFileSize(content.files.source.size)})
                       </a>
                     </Button>

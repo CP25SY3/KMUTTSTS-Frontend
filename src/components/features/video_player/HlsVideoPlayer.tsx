@@ -117,6 +117,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
     const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isKeyboardHandledRef = useRef(false);
     const mouseInactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isTouchRef = useRef(false);
 
     // State
     const [isPlaying, setIsPlaying] = useState(false);
@@ -496,33 +497,40 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         );
     }, []);
 
-    // Mouse inactivity handler for fullscreen
-    useEffect(() => {
-      if (!isFullscreen) {
-        setShowControls(true);
-        return;
+    // Handle activity to show controls
+    const handleActivity = useCallback(() => {
+      setShowControls(true);
+
+      if (mouseInactivityTimeoutRef.current) {
+        clearTimeout(mouseInactivityTimeoutRef.current);
       }
 
-      const handleMouseMove = () => {
-        // Show controls on mouse movement
-        setShowControls(true);
-
-        // Clear existing timeout
-        if (mouseInactivityTimeoutRef.current) {
-          clearTimeout(mouseInactivityTimeoutRef.current);
+      mouseInactivityTimeoutRef.current = setTimeout(() => {
+        if (videoRef.current && !videoRef.current.paused) {
+          setShowControls(false);
         }
+      }, 3000);
+    }, []);
 
-        // Hide controls after 3 seconds of inactivity
-        mouseInactivityTimeoutRef.current = setTimeout(() => {
-          if (isFullscreen) {
-            setShowControls(false);
-          }
-        }, 3000);
+    // Mouse/Touch inactivity handler
+    useEffect(() => {
+      const handleMouseMove = () => {
+        // If we detect a mouse move, we can assume it's not a touch interaction anymore
+        // (unless it's a synthesized mousemove, but those usually happen with clicks)
+        // We'll rely on touchstart to set the flag
+        handleActivity();
+      };
+
+      const handleTouchStart = () => {
+        isTouchRef.current = true;
+        handleActivity();
       };
 
       const handleMouseLeave = () => {
-        // Hide controls when mouse leaves the video area in fullscreen
-        if (isFullscreen) {
+        // Ignore mouseleave if we are in touch mode
+        if (isTouchRef.current) return;
+
+        if (videoRef.current && !videoRef.current.paused) {
           setShowControls(false);
         }
       };
@@ -531,19 +539,21 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
       if (container) {
         container.addEventListener("mousemove", handleMouseMove);
         container.addEventListener("mouseleave", handleMouseLeave);
+        container.addEventListener("touchstart", handleTouchStart);
 
-        // Set initial timeout
-        handleMouseMove();
+        // Initial check
+        handleActivity();
 
         return () => {
           container.removeEventListener("mousemove", handleMouseMove);
           container.removeEventListener("mouseleave", handleMouseLeave);
+          container.removeEventListener("touchstart", handleTouchStart);
           if (mouseInactivityTimeoutRef.current) {
             clearTimeout(mouseInactivityTimeoutRef.current);
           }
         };
       }
-    }, [isFullscreen]);
+    }, [handleActivity]);
 
     // Control functions
     const togglePlayPause = useCallback(async () => {
@@ -602,6 +612,9 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
           return;
         }
 
+        // Show controls on click
+        handleActivity();
+
         // Increment click count
         clickCountRef.current += 1;
 
@@ -623,7 +636,7 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
           clickCountRef.current = 0;
         }, 250); // Wait 250ms to distinguish between single and double click
       },
-      [togglePlayPause, toggleFullscreen]
+      [togglePlayPause, toggleFullscreen, handleActivity]
     );
 
     const handleKeyboardToggle = useCallback(() => {
@@ -991,10 +1004,10 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
         <div
           className={cn(
             "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity video-controls",
-            isFullscreen
-              ? showControls
-                ? "opacity-100"
-                : "opacity-0"
+            showControls
+              ? "opacity-100"
+              : isFullscreen
+              ? "opacity-0"
               : "opacity-0 group-hover:opacity-100",
             controlsClassName
           )}
@@ -1084,15 +1097,6 @@ const HlsVideoPlayer = forwardRef<HlsVideoPlayerHandle, HlsVideoPlayerProps>(
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Debug info */}
-              {process.env.NODE_ENV === "development" && (
-                <span className="text-xs text-white/50">
-                  Native: {isNativeHls ? "Y" : "N"} | Levels:{" "}
-                  {qualityLevels.length} | Current: {actualPlayingLevel} |
-                  Selected: {selectedQuality}
-                </span>
-              )}
-
               {/* Quality selector */}
               {!isNativeHls && qualityLevels.length > 0 ? (
                 <DropdownMenu modal={false}>

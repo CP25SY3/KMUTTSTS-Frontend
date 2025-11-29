@@ -28,8 +28,9 @@ interface AudioPlayerProps {
 }
 
 // Random waveform values (not symmetric)
-const FULL_WAVE = Array.from({ length: 100 }, () =>
-  Math.floor(Math.random() * (100 - 5 + 1)) + 5
+const FULL_WAVE = Array.from(
+  { length: 100 },
+  () => Math.floor(Math.random() * (100 - 5 + 1)) + 5
 );
 
 export function AudioPlayer({
@@ -331,8 +332,7 @@ function WaveformSection({ isPlaying }: { isPlaying: boolean }) {
             key={i}
             className={cn(
               "w-[3px] rounded-full bg-foreground opacity-80 transition-all duration-100",
-              isPlaying &&
-                "animate-[noisy-wave_1.5s_ease-in-out_infinite]"
+              isPlaying && "animate-[noisy-wave_1.5s_ease-in-out_infinite]"
             )}
             style={{
               height: `${h}%`,
