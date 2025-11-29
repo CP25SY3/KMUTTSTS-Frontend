@@ -3,18 +3,11 @@
 
 import React from "react";
 import { SlidersHorizontal, PlayCircle, Music2 } from "lucide-react";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectValue,
-  SelectItem,
-} from "@/components/ui/select";
 
 export type MediaType = "all" | "video" | "audio";
 
 interface CategoryTabsProps {
-  mediaType: MediaType;                        // 👈 รับค่าจาก parent
+  mediaType: MediaType; // 👈 รับค่าจาก parent
   onMediaTypeChange?: (type: MediaType) => void;
 }
 
@@ -27,59 +20,69 @@ export default function CategoryTabs({
     onMediaTypeChange?.(value);
   };
 
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border bg-card/40 p-4 shadow-sm">
-      {/* Title */}
-      <div className="space-y-1">
-        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Discover
-        </p>
-        <h2 className="text-sm sm:text-base font-semibold text-foreground">
-          Filter Content
-        </h2>
-        <p className="hidden text-xs text-muted-foreground sm:block">
-          Quickly switch between video and audio content.
-        </p>
-      </div>
+  const tabs: { label: string; value: MediaType; icon: React.ReactNode }[] = [
+    {
+      label: "All Types",
+      value: "all",
+      icon: <SlidersHorizontal className="h-4 w-4" />,
+    },
+    {
+      label: "Video",
+      value: "video",
+      icon: <PlayCircle className="h-4 w-4" />,
+    },
+    {
+      label: "Audio",
+      value: "audio",
+      icon: <Music2 className="h-4 w-4" />,
+    },
+  ];
 
-      {/* Media Filter Dropdown */}
-      <div className="flex items-center gap-2">
-        <div className="hidden items-center gap-1 rounded-full bg-muted/60 px-2 py-1 text-[11px] text-muted-foreground sm:flex">
-          <SlidersHorizontal className="h-3 w-3" />
-          <span>Filter</span>
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl border bg-card/40 p-4 shadow-sm">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Discover
+          </p>
+          <h2 className="text-lg font-semibold text-foreground">
+            Filter Content
+          </h2>
         </div>
 
-        <Select
-          value={mediaType}                                     // 👈 คุมจาก parent
-          onValueChange={(val) => handleMediaTypeChange(val as MediaType)}
-        >
-          <SelectTrigger className="h-9 w-[150px] rounded-full border border-border bg-background/80 px-4 text-xs sm:text-sm shadow-none hover:bg-muted">
-            <SelectValue placeholder="All types" />
-          </SelectTrigger>
+        {/* Optional: Add a subtle hint or secondary action here if needed */}
+      </div>
 
-          <SelectContent className="text-xs sm:text-sm">
-            <SelectItem value="all">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="h-3 w-3" />
-                <span>All Types</span>
-              </div>
-            </SelectItem>
-
-            <SelectItem value="video">
-              <div className="flex items-center gap-2">
-                <PlayCircle className="h-3 w-3" />
-                <span>Video</span>
-              </div>
-            </SelectItem>
-
-            <SelectItem value="audio">
-              <div className="flex items-center gap-2">
-                <Music2 className="h-3 w-3" />
-                <span>Audio</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Tabs Section */}
+      <div className="flex flex-wrap items-center gap-2">
+        {tabs.map((tab) => {
+          const isActive = mediaType === tab.value;
+          return (
+            <button
+              key={tab.value}
+              onClick={() => handleMediaTypeChange(tab.value)}
+              className={`
+                group flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200
+                ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }
+              `}
+            >
+              {/* Icon with subtle animation on active/hover */}
+              <span
+                className={`transition-transform duration-200 ${
+                  isActive ? "scale-110" : "group-hover:scale-110"
+                }`}
+              >
+                {tab.icon}
+              </span>
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

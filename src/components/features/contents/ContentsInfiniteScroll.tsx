@@ -7,15 +7,26 @@ import { UniversalVideoCard } from "@/components/shared";
 import { mediaURL } from "@/utils";
 import { Button } from "@/components/ui/button";
 
-export default function ContentsGrid() {
+import { MediaType } from "./CategoryTabs";
+
+interface ContentsInfiniteScrollProps {
+  mediaType?: MediaType;
+}
+
+export default function ContentsGrid({
+  mediaType,
+}: ContentsInfiniteScrollProps) {
   const router = useRouter();
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useInfiniteContents();
+    useInfiniteContents({
+      type: mediaType === "all" ? undefined : mediaType,
+    });
 
-  const items = useMemo(
-    () => (data?.pages.flatMap(p => p.items) ?? []),
-    [data]
-  );
+  const items = useMemo(() => {
+    const allItems = data?.pages.flatMap((p) => p.items) ?? [];
+    if (!mediaType || mediaType === "all") return allItems;
+    return allItems.filter((item) => item.type === mediaType);
+  }, [data, mediaType]);
 
   // IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -23,12 +34,15 @@ export default function ContentsGrid() {
     if (!hasNextPage || !sentinelRef.current) return;
     const el = sentinelRef.current;
 
-    const io = new IntersectionObserver((entries) => {
-      const first = entries[0];
-      if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    }, { rootMargin: '10px' }); // prefetch a bit earlier
+    const io = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "10px" }
+    ); // prefetch a bit earlier
 
     io.observe(el);
     return () => io.unobserve(el);
@@ -73,7 +87,7 @@ export default function ContentsGrid() {
                 disabled={isFetchingNextPage}
                 className="px-8 bg-primary"
               >
-                {isFetchingNextPage ? 'Loading…' : 'Load More Contents'}
+                {isFetchingNextPage ? "Loading…" : "Load More Contents"}
               </Button>
             </div>
           )}
@@ -84,5 +98,4 @@ export default function ContentsGrid() {
       )}
     </main>
   );
-
 }

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { useParams } from "next/navigation";
-import { useVideoDetail } from "@/api/features/player/playerHooks";
+import { useContentDetail } from "@/api/features/player/playerHooks";
 import {
   Clock,
   Eye,
@@ -27,7 +27,7 @@ import { formatDate, formatDuration, formatFileSize } from "@/utils";
 
 export default function PlayerPage() {
   const params = useParams<{ videoId: string }>();
-  const videoId = params.videoId;
+  const contentId = params.videoId;
   const playerRef = useRef<HlsVideoPlayerHandle>(null);
 
   // Determine if we should enable polling based on the current status
@@ -37,16 +37,16 @@ export default function PlayerPage() {
     data: response,
     isLoading,
     error,
-  } = useVideoDetail(videoId, {
+  } = useContentDetail(contentId, {
     enablePolling: shouldPoll,
   });
-  const video = response?.data;
+  const content = response?.data;
 
   // Update polling state based on video status
   useEffect(() => {
-    if (video?.status?.transcode) {
-      const status = video.status.transcode;
-      console.log(`Video status: ${status}, Polling: ${shouldPoll}`);
+    if (content?.status?.transcode) {
+      const status = content.status.transcode;
+      console.log(`content status: ${status}, Polling: ${shouldPoll}`);
 
       if (status === "completed" || status === "failed") {
         setShouldPoll(false);
@@ -57,7 +57,7 @@ export default function PlayerPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [video?.status?.transcode]);
+  }, [content?.status?.transcode]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -111,7 +111,7 @@ export default function PlayerPage() {
     );
   }
 
-  if (error || !video) {
+  if (error || !content) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto p-2 sm:p-6">
@@ -138,22 +138,22 @@ export default function PlayerPage() {
         <div className="max-w-6xl mx-auto">
           {/* Video Player */}
           <div className="mb-4 sm:mb-6">
-            {video.type === "audio" ? (
-                <AudioPlayer
-                  src={video.files?.source?.url || ""}
-                  title={video.title}
-                  artist={video.relations?.channel?.name || "Unknown Artist"}
-                  thumbnailUrl={video.files?.thumbnail?.url}
-                  duration={video.duration}
-                  onBack={() => window.history.back()}
-                />
-            ) : video.status.transcode === "completed" &&
-            video.playback.hlsMasterUrl ? (
+            {content.type === "audio" ? (
+              <AudioPlayer
+                src={content.files?.source?.url || ""}
+                title={content.title}
+                artist={content.relations?.channel?.name || "Unknown Artist"}
+                thumbnailUrl={content.files?.thumbnail?.url}
+                duration={content.duration}
+                onBack={() => window.history.back()}
+              />
+            ) : content.status.transcode === "completed" &&
+              content.playback.hlsMasterUrl ? (
               <HlsVideoPlayer
                 ref={playerRef}
-                src={video.playback.hlsMasterUrl}
+                src={content.playback.hlsMasterUrl}
                 poster={
-                  video.files?.thumbnail?.url || "/api/placeholder/800/450"
+                  content.files?.thumbnail?.url || "/api/placeholder/800/450"
                 }
                 autoPlay={false}
                 muted={false}
@@ -169,13 +169,13 @@ export default function PlayerPage() {
               <div className="w-full aspect-video rounded-lg bg-muted flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-muted-foreground mb-2">
-                    {video.status.transcode === "processing"
+                    {content.status.transcode === "processing"
                       ? "Processing video..."
                       : "Video not ready"}
                   </div>
-                  {video.status.error && (
+                  {content.status.error && (
                     <div className="text-sm text-red-500">
-                      Error: {video.status.error}
+                      Error: {content.status.error}
                     </div>
                   )}
                 </div>
@@ -189,41 +189,41 @@ export default function PlayerPage() {
               {/* Video Info */}
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold mb-2">
-                  {video.title}
+                  {content.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-4">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    {formatDuration(video.duration)}
+                    {formatDuration(content.duration)}
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {formatDate(video.timestamps.createdAt)}
+                    {formatDate(content.timestamps.createdAt)}
                   </div>
                   <Badge
                     variant="secondary"
                     className="flex items-center gap-1"
                   >
                     <Shield className="h-3 w-3" />
-                    {video.access}
+                    {content.access}
                   </Badge>
                   <Badge
                     variant="outline"
-                    className={getStatusColor(video.status.transcode)}
+                    className={getStatusColor(content.status.transcode)}
                   >
-                    {getStatusIcon(video.status.transcode)}
-                    {video.status.transcode}
+                    {getStatusIcon(content.status.transcode)}
+                    {content.status.transcode}
                   </Badge>
-                  {shouldPoll && video.status.transcode === "processing" && (
+                  {shouldPoll && content.status.transcode === "processing" && (
                     <Badge variant="secondary" className="text-xs">
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Auto-refreshing...
                     </Badge>
                   )}
                 </div>
-                {video.description && (
+                {content.description && (
                   <p className="text-sm sm:text-base text-muted-foreground">
-                    {video.description}
+                    {content.description}
                   </p>
                 )}
               </div>
@@ -234,11 +234,11 @@ export default function PlayerPage() {
                   <div className="flex items-center gap-3 sm:gap-4">
                     <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                       <AvatarImage
-                        src={video.relations?.channel?.avatarUrl || ""}
-                        alt={video.relations?.channel?.name || "Channel"}
+                        src={content.relations?.channel?.avatarUrl || ""}
+                        alt={content.relations?.channel?.name || "Channel"}
                       />
                       <AvatarFallback>
-                        {video.relations?.channel?.name
+                        {content.relations?.channel?.name
                           ?.substring(0, 2)
                           .toUpperCase() || "CH"}
                       </AvatarFallback>
@@ -247,15 +247,15 @@ export default function PlayerPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/channel/${
-                            video.relations?.channel?.id || ""
+                            content.relations?.channel?.id || ""
                           }`}
                         >
                           <h3 className="font-semibold text-base sm:text-xl hover:text-primary cursor-pointer">
-                            {video.relations?.channel?.name ||
+                            {content.relations?.channel?.name ||
                               "Unknown Channel"}
                           </h3>
                         </Link>
-                        {video.relations?.channel?.official && (
+                        {content.relations?.channel?.official && (
                           <Badge variant="secondary" className="text-xs">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Official
@@ -270,54 +270,54 @@ export default function PlayerPage() {
 
             {/* Sidebar Content */}
             <div className="space-y-4">
-              {/* Video Details */}
+              {/* Content Details */}
               <Card>
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Settings className="h-4 w-4" />
-                    Video Details
+                    Content Details
                   </h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Video ID:</span>
-                      <span className="font-mono text-xs">{video.id}</span>
+                      <span className="font-mono text-xs">{content.id}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Type:</span>
-                      <Badge variant="outline">{video.type}</Badge>
+                      <Badge variant="outline">{content.type}</Badge>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Duration:</span>
-                      <span>{formatDuration(video.duration)}</span>
+                      <span>{formatDuration(content.duration)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Dimensions:</span>
                       <span>
-                        {video.playback?.renditions[0]?.width &&
-                        video.playback?.renditions[0].height
-                          ? `${video.playback?.renditions[0].width} × ${video.playback?.renditions[0].height}`
+                        {content.playback?.renditions[0]?.width &&
+                        content.playback?.renditions[0].height
+                          ? `${content.playback?.renditions[0].width} × ${content.playback?.renditions[0].height}`
                           : "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">File Size:</span>
                       <span>
-                        {video.files?.source?.size
-                          ? formatFileSize(video.files.source.size)
+                        {content.files?.source?.size
+                          ? formatFileSize(content.files.source.size)
                           : "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Format:</span>
-                      <span>{video.files?.source?.mime || "N/A"}</span>
+                      <span>{content.files?.source?.mime || "N/A"}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Available Qualities */}
-              {video.playback?.renditions &&
-                video.playback.renditions.length > 0 && (
+              {content.playback?.renditions &&
+                content.playback.renditions.length > 0 && (
                   <Card>
                     <CardContent className="p-4">
                       <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function PlayerPage() {
                         Available Qualities
                       </h3>
                       <div className="space-y-2">
-                        {video.playback.renditions.map((rendition, index) => (
+                        {content.playback.renditions.map((rendition, index) => (
                           <div
                             key={index}
                             className="flex justify-between items-center p-2 rounded bg-muted/50"
@@ -357,28 +357,29 @@ export default function PlayerPage() {
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-3">
                     Processing Status
-                    {shouldPoll && video.status.transcode === "processing" && (
-                      <Badge variant="secondary" className="ml-2 text-xs">
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        Auto-refreshing
-                      </Badge>
-                    )}
+                    {shouldPoll &&
+                      content.status.transcode === "processing" && (
+                        <Badge variant="secondary" className="ml-2 text-xs">
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          Auto-refreshing
+                        </Badge>
+                      )}
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      {getStatusIcon(video.status.transcode)}
+                      {getStatusIcon(content.status.transcode)}
                       <span className="capitalize">
-                        {video.status.transcode}
+                        {content.status.transcode}
                       </span>
                     </div>
-                    {video.status.processedAt && (
+                    {content.status.processedAt && (
                       <div className="text-sm text-muted-foreground">
-                        Processed: {formatDate(video.status.processedAt)}
+                        Processed: {formatDate(content.status.processedAt)}
                       </div>
                     )}
-                    {video.status.error && (
+                    {content.status.error && (
                       <div className="text-sm text-red-500 p-2 rounded bg-red-50">
-                        {video.status.error}
+                        {content.status.error}
                       </div>
                     )}
                   </div>
@@ -399,12 +400,13 @@ export default function PlayerPage() {
                       asChild
                     >
                       <a
-                        href={video.files.source?.url || ""}
+                        href={content.files.source?.url || ""}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        Source Video ({formatFileSize(video.files.source.size)})
+                        Source Video (
+                        {formatFileSize(content.files.source.size)})
                       </a>
                     </Button>
                     <Button
@@ -413,7 +415,7 @@ export default function PlayerPage() {
                       asChild
                     >
                       <a
-                        href={video.files.thumbnail?.url || ""}
+                        href={content.files.thumbnail?.url || ""}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

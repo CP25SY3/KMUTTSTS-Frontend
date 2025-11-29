@@ -1,4 +1,4 @@
-export interface VideoRendition {
+export interface ContentRendition {
   label: string;
   width: number;
   height: number;
@@ -8,18 +8,18 @@ export interface VideoRendition {
   playlistUrl: string;
 }
 
-export interface VideoPlayback {
+export interface ContentPlayback {
   hlsMasterUrl: string;
-  renditions: VideoRendition[];
+  renditions: ContentRendition[];
 }
 
-export interface VideoStatus {
+export interface ContentStatus {
   transcode: "pending" | "processing" | "completed" | "failed";
   processedAt?: string;
   error?: string | null;
 }
 
-export interface VideoFiles {
+export interface ContentFiles {
   thumbnail: {
     url: string;
     width: number;
@@ -32,38 +32,38 @@ export interface VideoFiles {
   };
 }
 
-export interface VideoChannel {
+export interface ContentChannel {
   id: string;
   name: string;
   official: boolean;
   avatarUrl?: string;
 }
 
-export interface VideoRelations {
+export interface ContentRelations {
   uploader?: unknown | null;
-  channel: VideoChannel;
+  channel: ContentChannel;
 }
 
-export interface VideoTimestamps {
+export interface ContentTimestamps {
   createdAt: string;
   updatedAt: string;
 }
 
-export interface VideoDetailData {
+export interface ContentDetailData {
   id: string;
   title: string;
   description: string;
   type: string;
   access: "public" | "private" | "unlisted";
   duration: number;
-  status: VideoStatus;
-  playback: VideoPlayback;
-  files: VideoFiles;
-  relations: VideoRelations;
-  timestamps: VideoTimestamps;
+  status: ContentStatus;
+  playback: ContentPlayback;
+  files: ContentFiles;
+  relations: ContentRelations;
+  timestamps: ContentTimestamps;
 }
 
-export interface VideoDetailResponse {
+export interface ContentDetailResponse {
   ok: boolean;
-  data: VideoDetailData;
+  data: ContentDetailData;
 }
