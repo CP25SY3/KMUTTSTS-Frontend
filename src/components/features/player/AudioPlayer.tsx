@@ -16,6 +16,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/utils";
+import ContentHeaderSection from "./ContentHeaderSection";
+import { AudioVisualizer } from "./AudioVisualizer";
 
 interface AudioPlayerProps {
   src: string;
@@ -26,12 +28,6 @@ interface AudioPlayerProps {
   onBack?: () => void;
   className?: string;
 }
-
-// Random waveform values (not symmetric)
-const FULL_WAVE = Array.from(
-  { length: 100 },
-  () => Math.floor(Math.random() * (100 - 5 + 1)) + 5
-);
 
 export function AudioPlayer({
   src,
@@ -49,16 +45,47 @@ export function AudioPlayer({
   const [isMuted, setIsMuted] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const contextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
-  // Audio events
+  // Audio events and Context Initialization
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    // Initialize Audio Context if not already done
+    const initAudioContext = () => {
+      if (contextRef.current) return;
+
+      try {
+        const AudioContext =
+          window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioContext();
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
+
+        const source = ctx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(ctx.destination);
+
+        contextRef.current = ctx;
+        analyserRef.current = analyser;
+        sourceRef.current = source;
+      } catch (error) {
+        console.error("Error initializing audio context:", error);
+      }
+    };
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () =>
       !Number.isNaN(audio.duration) && setDuration(audio.duration);
     const onEnded = () => setIsPlaying(false);
+
+    // Initialize context on first interaction (play) or immediately if possible
+    // We'll try to init on mount, but handle the "already connected" case by checking refs
+    initAudioContext();
 
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateDuration);
@@ -68,8 +95,19 @@ export function AudioPlayer({
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", onEnded);
+
+      // We do NOT close the context here because the audio element persists
+      // and we can't create a new source for it if we unmount/remount.
+      // The context will be garbage collected when the audio element is destroyed (on page navigation).
     };
   }, []);
+
+  // Resume context on play
+  useEffect(() => {
+    if (isPlaying && contextRef.current?.state === "suspended") {
+      contextRef.current.resume();
+    }
+  }, [isPlaying]);
 
   // Volume sync
   useEffect(() => {
@@ -105,7 +143,11 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
-        "relative w-full max-w-5xl mx-auto bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl px-6 py-5 md:px-10 md:py-8 flex flex-col gap-6",
+        "relative w-full max-w-5xl mx-auto bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl flex flex-col",
+        // Mobile: full viewport height, smaller padding
+        "h-[90dvh] p-4 gap-4",
+        // Desktop: auto height, larger padding
+        "md:h-auto md:p-10 md:gap-6",
         className
       )}
     >
@@ -116,9 +158,9 @@ export function AudioPlayer({
       </div>
 
       {/* HEADER */}
-      <HeaderSection onBack={onBack} title={title} artist={artist} />
+      <ContentHeaderSection onBack={onBack} title={title} artist={artist} />
 
-      <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-stretch">
+      <div className="relative z-10 flex flex-col flex-1 min-h-0 gap-2 sm:gap-4 md:gap-8 md:flex-row md:items-stretch">
         {/* ARTWORK */}
         <ArtworkSection
           thumbnailUrl={thumbnailUrl}
@@ -127,76 +169,42 @@ export function AudioPlayer({
         />
 
         {/* RIGHT SIDE */}
-        <div className="flex w-full flex-col justify-between gap-6 md:w-2/3">
-          <TimeSection
-            progress={progress}
-            currentTime={currentTime}
-            duration={duration}
-            onSeek={handleSeek}
-          />
+        <div className="flex w-full flex-col justify-between gap-2  md:w-2/3 flex-1 min-h-0">
+          <div className="flex-1 flex flex-col justify-center items-center min-h-[90px] h-full">
+            <AudioVisualizer
+              className="max-h-[200px]"
+              analyser={analyserRef.current}
+              isPlaying={isPlaying}
+            />
+          </div>
 
-          <WaveformSection isPlaying={isPlaying} />
+          <div className="flex flex-col gap-4 md:gap-6 mt-auto">
+            <TimeSection
+              progress={progress}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={handleSeek}
+            />
 
-          <ControlSection
-            isPlaying={isPlaying}
-            togglePlay={togglePlay}
-            isMuted={isMuted}
-            volume={volume}
-            toggleMute={() => setIsMuted(!isMuted)}
-            onVolume={(v: number) => handleVolumeChange(v)}
-            audioRef={audioRef}
-          />
+            <ControlSection
+              isPlaying={isPlaying}
+              togglePlay={togglePlay}
+              isMuted={isMuted}
+              volume={volume}
+              toggleMute={() => setIsMuted(!isMuted)}
+              onVolume={(v: number) => handleVolumeChange(v)}
+              audioRef={audioRef}
+            />
+          </div>
         </div>
       </div>
 
-      <audio ref={audioRef} src={src} />
+      <audio ref={audioRef} src={src} crossOrigin="anonymous" />
     </div>
   );
 }
 
 /* --- SUB COMPONENTS --- */
-
-function HeaderSection({
-  onBack,
-  title,
-  artist,
-}: {
-  onBack?: () => void;
-  title: string;
-  artist: string;
-}) {
-  return (
-    <div className="relative z-10 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-foreground hover:bg-muted/20 rounded-full"
-            onClick={onBack}
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-        )}
-        <div className="flex flex-col">
-          <span className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-            Now Playing
-          </span>
-          <span className="text-lg font-semibold leading-tight">{title}</span>
-          <span className="text-sm text-muted-foreground">{artist}</span>
-        </div>
-      </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-foreground hover:bg-muted/20 rounded-full"
-      >
-        <Heart className="h-6 w-6" />
-      </Button>
-    </div>
-  );
-}
 
 function ArtworkSection({
   thumbnailUrl,
@@ -208,8 +216,8 @@ function ArtworkSection({
   isPlaying: boolean;
 }) {
   return (
-    <div className="flex w-full flex-col items-center md:w-1/3">
-      <div className="relative aspect-square w-full max-w-xs overflow-hidden rounded-3xl border border-border shadow-2xl">
+    <div className="flex w-full flex-col items-center md:shrink">
+      <div className="relative aspect-square w-full max-w-[280px] min-w-[200px] overflow-hidden rounded-3xl border border-border shadow-2xl shrink-0">
         <Image
           src={thumbnailUrl || "/Podcast.jpg"}
           alt={title}
@@ -236,7 +244,7 @@ function TimeSection({
   onSeek: (value: number) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 shrink-0">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{formatDuration(Math.floor(currentTime))}</span>
         <span>{formatDuration(Math.floor(duration))}</span>
@@ -285,67 +293,6 @@ function TimeSection({
   );
 }
 
-function WaveformSection({ isPlaying }: { isPlaying: boolean }) {
-  return (
-    <div className="flex h-32 w-full items-center justify-center">
-      <style jsx>{`
-        @keyframes noisy-wave {
-          0% {
-            transform: scaleY(0.8);
-          }
-          10% {
-            transform: scaleY(1.1);
-          }
-          20% {
-            transform: scaleY(0.9);
-          }
-          30% {
-            transform: scaleY(1.2);
-          }
-          40% {
-            transform: scaleY(0.95);
-          }
-          50% {
-            transform: scaleY(0.7);
-          }
-          60% {
-            transform: scaleY(1.15);
-          }
-          70% {
-            transform: scaleY(0.85);
-          }
-          80% {
-            transform: scaleY(1.05);
-          }
-          90% {
-            transform: scaleY(0.75);
-          }
-          100% {
-            transform: scaleY(0.9);
-          }
-        }
-      `}</style>
-
-      <div className="flex h-full items-center justify-center gap-[2px]">
-        {FULL_WAVE.map((h, i) => (
-          <div
-            key={i}
-            className={cn(
-              "w-[3px] rounded-full bg-foreground opacity-80 transition-all duration-100",
-              isPlaying && "animate-[noisy-wave_1.5s_ease-in-out_infinite]"
-            )}
-            style={{
-              height: `${h}%`,
-              animationDelay: `${Math.random() * -1}s`,
-              opacity: isPlaying ? 1 : 0.2,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function ControlSection({
   isPlaying,
   togglePlay,
@@ -364,7 +311,7 @@ function ControlSection({
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 shrink-0">
       <div className="flex items-center justify-between w-full">
         {/* LEFT — Volume */}
         <div className="flex items-center gap-3">
@@ -381,7 +328,7 @@ function ControlSection({
             )}
           </Button>
 
-          <div className="relative w-28 h-1.5 rounded-full bg-muted/40 group cursor-pointer">
+          <div className="relative w-28 h-1.5 rounded-full bg-muted/40 group cursor-pointer hidden sm:block">
             <div
               className="absolute inset-y-0 left-0 rounded-full bg-foreground/60 group-hover:bg-primary transition-colors"
               style={{ width: `${isMuted ? 0 : volume * 100}%` }}
