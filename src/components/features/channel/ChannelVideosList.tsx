@@ -1,11 +1,16 @@
+// src/components/features/channel/ChannelVideosList.tsx
 "use client";
 import { useChannelContents } from "@/api/features/channel/channelHooks";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { Grid, List, Search, Loader2 } from "lucide-react";
+import { Grid, List, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { UniversalVideoCard } from "@/components/shared";
 import { useRouter } from "next/navigation";
+
+import CategoryTabs, {
+  MediaType,
+} from "@/components/features/contents/CategoryTabs";
 
 interface ChannelVideosListProps {
   channelId: string;
@@ -17,6 +22,9 @@ export default function ChannelVideosList({
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [mediaType, setMediaType] = useState<MediaType>("all");
+
+  console.log("[ChannelVideosList] mediaType =", mediaType, "search =", searchQuery);
 
   const {
     data,
@@ -27,7 +35,8 @@ export default function ChannelVideosList({
     error,
   } = useChannelContents(channelId, {
     pageSize: 8,
-    contentType: searchQuery || undefined,
+    contentType: mediaType === "all" ? undefined : mediaType,
+    search: searchQuery || undefined,
   });
 
   const allVideos = data?.pages.flatMap((page) => page.data) ?? [];
@@ -45,7 +54,7 @@ export default function ChannelVideosList({
           fetchNextPage();
         }
       },
-      { rootMargin: "10px" } // prefetch a bit earlier
+      { rootMargin: "10px" }
     );
     io.observe(el);
     return () => io.unobserve(el);
@@ -79,13 +88,19 @@ export default function ChannelVideosList({
 
   return (
     <div className="space-y-6">
+      {/* Filter DDL: All / Video / Audio */}
+      <CategoryTabs
+        mediaType={mediaType}                    // 👈 คุมค่าจาก parent
+        onMediaTypeChange={(type) => setMediaType(type)}
+      />
+
       {/* Search and View Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search videos in channel..."
+            placeholder="Search contents in channel..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -148,12 +163,13 @@ export default function ChannelVideosList({
                 disabled={isFetchingNextPage}
                 className="px-8 bg-primary"
               >
-                {isFetchingNextPage ? 'Loading…' : 'Load More Contents'}
+                {isFetchingNextPage ? "Loading…" : "Load More Contents"}
               </Button>
             </div>
           )}
         </>
       )}
+
       {/* Sentinel for auto-fetch on scroll */}
       <div ref={sentinelRef} className="h-8 w-full" />
     </div>

@@ -1,13 +1,13 @@
 "use client";
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, Clock, Play, CheckCircle } from "lucide-react";
+import { Eye, Clock, Play, CheckCircle, Music2 } from "lucide-react";
 import Image from "next/image";
 import { mediaURL } from "@/utils";
-import { toImageSrc } from "@/utils/toImageSrc";
 
-interface channelInfo {
+interface ChannelInfo {
   documentId?: string;
   channelName?: string;
   creatorName?: string;
@@ -15,6 +15,9 @@ interface channelInfo {
   subject?: string;
   isOfficial?: boolean;
 }
+
+type ContentType = "audio" | "video" | string;
+
 // Universal content interface that can accommodate different content types
 export interface UniversalContent {
   documentId?: string;
@@ -27,9 +30,9 @@ export interface UniversalContent {
   viewerCount?: string;
   createdAt?: string;
   publishedAt?: string;
-  type?: string;
+  type?: ContentType;
   isLive?: boolean;
-  channel?: channelInfo;
+  channel?: ChannelInfo;
 }
 
 interface UniversalVideoCardProps {
@@ -49,15 +52,17 @@ export default function UniversalVideoCard({
 }: UniversalVideoCardProps) {
   const formatDuration = (duration?: string) => {
     if (!duration) return null;
-    // Assuming duration is in seconds or HH:MM:SS format
+    // TODO: ถ้าต่อไป duration เป็นวินาที ค่อยมา parse เพิ่ม
     return duration;
   };
+
+  console.log(content);
 
   const formatViews = (views?: number, viewerCount?: string) => {
     if (viewerCount) return viewerCount;
     if (!views) return "0";
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+    if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}M`;
+    if (views >= 1_000) return `${(views / 1_000).toFixed(1)}K`;
     return views.toString();
   };
 
@@ -88,6 +93,16 @@ export default function UniversalVideoCard({
   const thumbnailUrl = getThumbnailUrl();
   const dateToShow = content.publishedAt || content.createdAt;
   const viewCount = formatViews(content.views, content.viewerCount);
+  const contentType: ContentType = content.type ?? "video";
+
+  const avatarSrc = content.channel?.profilePicture
+    ? mediaURL(content.channel.profilePicture)
+    : undefined;
+
+  const channelDisplayName =
+    content.channel?.channelName ||
+    content.channel?.creatorName ||
+    "Unknown";
 
   return (
     <Card
@@ -98,7 +113,7 @@ export default function UniversalVideoCard({
       <div className="relative aspect-video overflow-hidden rounded-t-lg bg-muted">
         {thumbnailUrl ? (
           <Image
-            // src={toImageSrc(thumbnailUrl)}
+            // ถ้า mediaURL ตรวจว่าเป็น full URL อยู่แล้ว ตรงนี้จะ OK
             src={mediaURL(thumbnailUrl)}
             alt={content.title}
             fill
@@ -108,15 +123,31 @@ export default function UniversalVideoCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-400 to-gray-600">
-            <Play className="h-12 w-12 text-white opacity-50" />
+            {contentType === "audio" ? (
+              <Music2 className="h-12 w-12 text-white opacity-60" />
+            ) : (
+              <Play className="h-12 w-12 text-white opacity-50" />
+            )}
           </div>
         )}
 
         {/* Live Badge */}
         {content.isLive && (
           <Badge className="absolute left-2 top-2 bg-red-500 text-white hover:bg-red-600">
-            <div className="mr-1 h-2 w-2 rounded-full bg-white animate-pulse"></div>
+            <div className="mr-1 h-2 w-2 rounded-full bg-white animate-pulse" />
             LIVE
+          </Badge>
+        )}
+
+        {/* Content Type Badge (audio / video) */}
+        {contentType && (
+          <Badge className="absolute left-2 bottom-2 flex items-center gap-1.5 bg-black/60 text-white backdrop-blur-md border-0 px-2 py-1 text-[10px] font-medium uppercase tracking-wider hover:bg-black/70">
+            {contentType === "audio" ? (
+              <Music2 className="h-3 w-3" />
+            ) : (
+              <Play className="h-3 w-3" />
+            )}
+            {contentType}
           </Badge>
         )}
 
@@ -147,31 +178,22 @@ export default function UniversalVideoCard({
           {/* Show creator info if enabled */}
           {showCreator && (
             <div className="flex items-center gap-2">
-              {
-                <Avatar className="h-6 w-6">
-                  <AvatarImage
-                    src={mediaURL(content.channel?.profilePicture)}
-                    alt={
-                      content.channel?.channelName ||
-                      content.channel?.channelName
-                    }
-                  />
-                  <AvatarFallback className="text-xs">
-                    {(
-                      content.channel?.channelName ||
-                      content.channel?.creatorName ||
-                      "Unknown"
-                    )
-                      .substring(0, 1)
-                      .toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              }
+              <Avatar className="h-6 w-6">
+                <AvatarImage
+                  src={avatarSrc}
+                  alt={channelDisplayName}
+                />
+                <AvatarFallback className="text-xs">
+                  {channelDisplayName.substring(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
               <p className="text-xs text-muted-foreground truncate">
                 {content.channel?.channelName ||
                   content.channel?.creatorName ||
                   "Unknown Creator"}
               </p>
+
               {content.channel?.isOfficial && (
                 <CheckCircle className="h-3 w-3" />
               )}
@@ -184,13 +206,6 @@ export default function UniversalVideoCard({
               {content.description}
             </p>
           )}
-
-          {/* Subject (for content items) */}
-          {/* {content.subject && (
-            <p className="line-clamp-1 text-xs text-muted-foreground">
-              {content.subject}
-            </p>
-          )} */}
 
           {/* Date */}
           {dateToShow && (

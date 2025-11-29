@@ -1,133 +1,85 @@
+// src/components/features/contents/CategoryTabs.tsx
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MoreHorizontal } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import React from "react";
+import { SlidersHorizontal, PlayCircle, Music2 } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
 
-interface Category {
-  id: string;
-  name: string;
-  isActive?: boolean;
+export type MediaType = "all" | "video" | "audio";
+
+interface CategoryTabsProps {
+  mediaType: MediaType;                        // 👈 รับค่าจาก parent
+  onMediaTypeChange?: (type: MediaType) => void;
 }
 
-const categories: Category[] = [
-  { id: "learning", name: "Trending", isActive: true },
-  { id: "events", name: "Latest" },
-  { id: "research", name: "Most Viewed" },
-];
-
-const learningCategories = [
-  "Computer Science",
-  "Engineering",
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Language Studies",
-  "Business",
-  "Data Science",
-];
-
-const eventCategories = [
-  "Workshops",
-  "Seminars",
-  "Career Fair",
-  "Sports Day",
-  "Cultural Events",
-  "Graduation",
-  "Orientation",
-  "Guest Lectures",
-];
-
-const researchCategories = [
-  "Final Year Project",
-  "Research Presentation",
-  "Thesis Defense",
-  "Lab Sessions",
-  "Group Projects",
-  "Innovation Fair",
-  "Academic Conference",
-];
-
-export default function CategoryTabs() {
-  const [activeCategory, setActiveCategory] = useState("learning");
-  const [activeSubcategory, setActiveSubcategory] =
-    useState("Computer Science");
-
-  // Get the appropriate subcategories based on active category
-  const getSubcategories = useCallback(() => {
-    switch (activeCategory) {
-      case "learning":
-        return learningCategories;
-      case "events":
-        return eventCategories;
-      case "research":
-        return researchCategories;
-      default:
-        return learningCategories;
-    }
-  }, [activeCategory]);
-
-  const subcategories = getSubcategories();
-
-  // Update subcategory when main category changes
-  useEffect(() => {
-    const newSubcategories = getSubcategories();
-    if (newSubcategories.length > 0) {
-      setActiveSubcategory(newSubcategories[0]);
-    }
-  }, [activeCategory, getSubcategories]);
-
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveCategory(categoryId);
+export default function CategoryTabs({
+  mediaType,
+  onMediaTypeChange,
+}: CategoryTabsProps) {
+  const handleMediaTypeChange = (value: MediaType) => {
+    console.log("[CategoryTabs] change to:", value);
+    onMediaTypeChange?.(value);
   };
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      {/* Main Categories */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <span className="text-xs sm:text-sm font-medium text-foreground">
-          Categories
-        </span>
-        <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "default" : "secondary"}
-              size="sm"
-              className={cn(
-                "rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
-                activeCategory === category.id
-                  ? "bg-primary text-background hover:bg-primary/85"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-              onClick={() => handleCategoryChange(category.id)}
-            >
-              {category.name}
-            </Button>
-          ))}
-        </div>
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border bg-card/40 p-4 shadow-sm">
+      {/* Title */}
+      <div className="space-y-1">
+        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          Discover
+        </p>
+        <h2 className="text-sm sm:text-base font-semibold text-foreground">
+          Filter Content
+        </h2>
+        <p className="hidden text-xs text-muted-foreground sm:block">
+          Quickly switch between video and audio content.
+        </p>
       </div>
 
-      {/* Subcategories */}
-      <div className="flex scrollbar-hide gap-2 overflow-x-auto pb-2 sm:pb-0">
-        {subcategories.map((subcategory) => (
-          <Button
-            key={subcategory}
-            variant={activeSubcategory === subcategory ? "default" : "outline"}
-            size="sm"
-            className={cn(
-              "rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors whitespace-nowrap",
-              activeSubcategory === subcategory
-                ? "bg-black text-white hover:bg-black/90"
-                : "border-border bg-background text-foreground hover:bg-muted"
-            )}
-            onClick={() => setActiveSubcategory(subcategory)}
-          >
-            {subcategory}
-          </Button>
-        ))}
+      {/* Media Filter Dropdown */}
+      <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-1 rounded-full bg-muted/60 px-2 py-1 text-[11px] text-muted-foreground sm:flex">
+          <SlidersHorizontal className="h-3 w-3" />
+          <span>Filter</span>
+        </div>
+
+        <Select
+          value={mediaType}                                     // 👈 คุมจาก parent
+          onValueChange={(val) => handleMediaTypeChange(val as MediaType)}
+        >
+          <SelectTrigger className="h-9 w-[150px] rounded-full border border-border bg-background/80 px-4 text-xs sm:text-sm shadow-none hover:bg-muted">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+
+          <SelectContent className="text-xs sm:text-sm">
+            <SelectItem value="all">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-3 w-3" />
+                <span>All Types</span>
+              </div>
+            </SelectItem>
+
+            <SelectItem value="video">
+              <div className="flex items-center gap-2">
+                <PlayCircle className="h-3 w-3" />
+                <span>Video</span>
+              </div>
+            </SelectItem>
+
+            <SelectItem value="audio">
+              <div className="flex items-center gap-2">
+                <Music2 className="h-3 w-3" />
+                <span>Audio</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
