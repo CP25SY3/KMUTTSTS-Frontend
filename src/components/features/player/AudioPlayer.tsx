@@ -66,8 +66,8 @@ export function AudioPlayer({
           ).webkitAudioContext;
         const ctx = new AudioContext();
         const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.8;
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.7;
 
         const source = ctx.createMediaElementSource(audio);
         source.connect(analyser);
@@ -86,8 +86,6 @@ export function AudioPlayer({
       !Number.isNaN(audio.duration) && setDuration(audio.duration);
     const onEnded = () => setIsPlaying(false);
 
-    // Initialize context on first interaction (play) or immediately if possible
-    // We'll try to init on mount, but handle the "already connected" case by checking refs
     initAudioContext();
 
     audio.addEventListener("timeupdate", updateTime);
@@ -98,10 +96,6 @@ export function AudioPlayer({
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", onEnded);
-
-      // We do NOT close the context here because the audio element persists
-      // and we can't create a new source for it if we unmount/remount.
-      // The context will be garbage collected when the audio element is destroyed (on page navigation).
     };
   }, []);
 
@@ -147,9 +141,7 @@ export function AudioPlayer({
     <div
       className={cn(
         "relative w-full max-w-5xl mx-auto bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl flex flex-col",
-        // Mobile: full viewport height, smaller padding
         "h-[90dvh] p-4 gap-4",
-        // Desktop: auto height, larger padding
         "md:h-auto md:p-10 md:gap-6",
         className
       )}

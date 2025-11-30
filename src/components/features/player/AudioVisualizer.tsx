@@ -32,11 +32,6 @@ export function AudioVisualizer({
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
 
-    // Normalize coordinate system to use css pixels.
-    // ctx.scale(dpr, dpr);
-    // Actually, it's often easier to just work with the scaled dimensions directly
-    // or scale the context. Let's work with scaled dimensions for crisp lines.
-
     const render = () => {
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
@@ -47,24 +42,13 @@ export function AudioVisualizer({
 
       ctx.clearRect(0, 0, width, height);
 
-      // Get theme color
-      // We can check the computed style of the canvas element itself
-      // assuming it inherits color from parent or body
       const computedStyle = getComputedStyle(canvas);
       const themeColor = computedStyle.color || "#ffffff";
 
-      // We want to visualize the spectrum symmetrically.
-      // We'll use a subset of the buffer because the high frequencies are often empty/low energy
-      // and we want the bars to look "full".
-      // Let's use the first ~70% of the bins.
-      const usefulBufferLength = Math.floor(bufferLength * 0.7);
-
-      // Calculate bar width to fill the canvas
-      // We want some gap.
+      const bars = 64; // Fixed number of bars
+      const barWidth = width / bars;
       const gap = 2 * dpr;
-      const totalGapSpace = gap * (usefulBufferLength - 1);
-      const availableWidth = width - totalGapSpace;
-      const barWidth = availableWidth / usefulBufferLength;
+      const effectiveBarWidth = barWidth - gap;
 
       let x = 0;
 
@@ -93,32 +77,66 @@ export function AudioVisualizer({
         ctx.fill();
       };
 
-      for (let i = 0; i < usefulBufferLength; i++) {
-        // Scale the value to fit the height
-        // We want symmetric, so max height is height / 2 (top) + height / 2 (bottom)
-        // But we draw from center.
+      // Logarithmic mapping
+      for (let i = 0; i < bars; i++) {
+        const minBin = 1;
+        const maxBin = Math.floor(bufferLength * 0.70);
 
-        // Boost high frequencies a bit as they tend to be lower amplitude
-        let value = dataArray[i];
-        if (i > usefulBufferLength * 0.5) {
-          value = value * 1.2;
+        const startBin = Math.floor(
+          minBin * Math.pow(maxBin / minBin, i / bars)
+        );
+        const endBin = Math.floor(
+          minBin * Math.pow(maxBin / minBin, (i + 1) / bars)
+        );
+
+        const actualEndBin = Math.max(endBin, startBin + 1);
+
+        let sum = 0;
+        let count = 0;
+        for (let j = startBin; j < actualEndBin && j < bufferLength; j++) {
+          sum += dataArray[j];
+          count++;
         }
 
-        // Normalize 0-255 to 0-1
-        const percent = Math.min(1, value / 255);
+        let value = count > 0 ? sum / count : 0;
 
-        // Calculate total bar height (symmetric)
-        // Max height is the full canvas height, but let's leave some padding
-        const maxBarHeight = height * 0.8;
+        const normalizedIndex = i / bars;
+        let boost = 1.0;
+
+        if (normalizedIndex < 0.2) {
+          boost = 0.85;
+        } else if (normalizedIndex < 0.4) {
+          boost = 0.9;
+        } else if (normalizedIndex < 0.6) {
+          boost = 1.05;
+        } else if (normalizedIndex < 0.8) {
+          boost = 1.4;
+        } else {
+          boost = 1.45;
+        }
+
+        value = value * boost;
+
+        let percent = value / 255;
+        percent = Math.pow(percent, 1.5);
+
+        percent = Math.min(1, percent);
+        percent = Math.min(1, percent);
+
+        const maxBarHeight = height * 0.85;
         const barHeight = Math.max(4 * dpr, percent * maxBarHeight); // Min height 4px
 
         const y = (height - barHeight) / 2;
 
-        // Draw rounded rect
-        // ctx.fillRect(x, y, barWidth, barHeight);
-        drawRoundedRect(x, y, barWidth, barHeight, barWidth / 2);
+        drawRoundedRect(
+          x,
+          y,
+          effectiveBarWidth,
+          barHeight,
+          effectiveBarWidth / 2
+        );
 
-        x += barWidth + gap;
+        x += barWidth;
       }
 
       animationFrameRef.current = requestAnimationFrame(render);
