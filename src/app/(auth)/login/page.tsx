@@ -8,7 +8,7 @@ import { useLogin } from "@/api/features/auth/authHooks";
 import { useRouter } from "next/navigation";
 import { Eye, EyeClosed } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMsalAuth } from "@/hooks/useMsalAuth";
+// import { useMsalAuth } from "@/hooks/useMsalAuth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [errorText, setErrorText] = useState<string>("");
   const [msalLoading, setMsalLoading] = useState(false);
   const login = useLogin();
-  const { loginWithPopup } = useMsalAuth();
+  // const { loginWithPopup } = useMsalAuth();
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export default function LoginPage() {
 
     try {
       // Use popup for better UX
-      await loginWithPopup();
+      // await loginWithPopup();
       // Success - redirect to home page
       router.push("/");
 
