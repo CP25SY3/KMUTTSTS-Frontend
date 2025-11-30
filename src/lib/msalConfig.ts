@@ -71,4 +71,16 @@ export const loginRequest = {
 };
 
 // Create MSAL instance
-export const msalInstance = new PublicClientApplication(msalConfig);
+// export const msalInstance = new PublicClientApplication(msalConfig);
+
+// Mock MSAL instance to prevent initialization errors
+export const msalInstance = {
+  initialize: async () => {},
+  loginPopup: async () => ({}),
+  loginRedirect: async () => {},
+  logoutPopup: async () => {},
+  logoutRedirect: async () => {},
+  getAllAccounts: () => [],
+  handleRedirectPromise: async () => null,
+  acquireTokenSilent: async () => ({}),
+} as unknown as PublicClientApplication;
