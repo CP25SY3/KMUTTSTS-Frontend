@@ -2,8 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Heart,
-  ArrowLeft,
   SkipBack,
   Play,
   Pause,
@@ -60,7 +58,12 @@ export function AudioPlayer({
 
       try {
         const AudioContext =
-          window.AudioContext || (window as any).webkitAudioContext;
+          window.AudioContext ||
+          (
+            window as typeof window & {
+              webkitAudioContext: typeof window.AudioContext;
+            }
+          ).webkitAudioContext;
         const ctx = new AudioContext();
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
