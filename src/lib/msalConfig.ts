@@ -4,12 +4,30 @@ import {
   LogLevel,
 } from "@azure/msal-browser";
 
+declare global {
+  interface Window {
+    _env_?: {
+      NEXT_PUBLIC_AZURE_CLIENT_ID?: string;
+      NEXT_PUBLIC_AZURE_TENANT_ID?: string;
+      NEXT_PUBLIC_API_BASE_URL?: string;
+      NEXT_IMAGE_UNOPTIMIZED?: string;
+    };
+  }
+}
+
 // MSAL configuration
 export const msalConfig: Configuration = {
   auth: {
-    clientId: process.env.NEXT_PUBLIC_AZURE_CLIENT_ID || "", // Your Azure AD Application (client) ID
+    clientId:
+      (typeof window !== "undefined" &&
+        window._env_?.NEXT_PUBLIC_AZURE_CLIENT_ID) ||
+      process.env.NEXT_PUBLIC_AZURE_CLIENT_ID ||
+      "", // Your Azure AD Application (client) ID
     authority: `https://login.microsoftonline.com/${
-      process.env.NEXT_PUBLIC_AZURE_TENANT_ID || "common"
+      (typeof window !== "undefined" &&
+        window._env_?.NEXT_PUBLIC_AZURE_TENANT_ID) ||
+      process.env.NEXT_PUBLIC_AZURE_TENANT_ID ||
+      "common"
     }`, // Your Azure AD tenant ID or "common"
     redirectUri:
       typeof window !== "undefined"

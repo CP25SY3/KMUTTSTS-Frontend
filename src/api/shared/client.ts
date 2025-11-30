@@ -2,7 +2,10 @@
 // In production you should set NEXT_PUBLIC_API_BASE_URL to something like "https://your-domain" (no trailing slash)
 // or leave it blank when using same-origin reverse proxy. We defensively coerce undefined/null to empty string and
 // normalize duplicate slashes when building the final request URL.
-const RAW_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // do NOT use non-null assertion so undefined won't become 'undefined'
+const RAW_BASE =
+  (typeof window !== "undefined" && window._env_?.NEXT_PUBLIC_API_BASE_URL) ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  ""; // do NOT use non-null assertion so undefined won't become 'undefined'
 // Strip trailing slash to avoid // when concatenating
 const BASE = RAW_BASE.replace(/\/$/, "");
 const DEFAULT_TIMEOUT = 10_000;
@@ -45,10 +48,10 @@ async function doFetch(
   );
 
   try {
-  // Ensure path begins with a single slash
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const finalUrl = `${BASE}${normalizedPath}`.replace(/([^:]\/)\/+/, "$1"); // collapse duplicate slashes except after protocol
-  const response = await fetch(finalUrl, {
+    // Ensure path begins with a single slash
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const finalUrl = `${BASE}${normalizedPath}`.replace(/([^:]\/)\/+/, "$1"); // collapse duplicate slashes except after protocol
+    const response = await fetch(finalUrl, {
       method: options.method ?? "GET",
       headers: toHeader(options),
       body: options.body
@@ -106,12 +109,30 @@ async function handle<T>(response: Response): Promise<T> {
 export const apiClient = {
   get: <T>(pathEndpoint: string, o: Omit<Opts, "method" | "body"> = {}) =>
     doFetch(pathEndpoint, { ...o, method: "GET" }).then((r) => handle<T>(r)),
-  post: <T>(pathEndpoint: string, body?: unknown, o: Omit<Opts, "method"> = {}) =>
-    doFetch(pathEndpoint, { ...o, method: "POST", body }).then((r) => handle<T>(r)),
-  put: <T>(pathEndpoint: string, body?: unknown, o: Omit<Opts, "method"> = {}) =>
-    doFetch(pathEndpoint, { ...o, method: "PUT", body }).then((r) => handle<T>(r)),
-  patch: <T>(pathEndpoint: string, body?: unknown, o: Omit<Opts, "method"> = {}) =>
-    doFetch(pathEndpoint, { ...o, method: "PATCH", body }).then((r) => handle<T>(r)),
+  post: <T>(
+    pathEndpoint: string,
+    body?: unknown,
+    o: Omit<Opts, "method"> = {}
+  ) =>
+    doFetch(pathEndpoint, { ...o, method: "POST", body }).then((r) =>
+      handle<T>(r)
+    ),
+  put: <T>(
+    pathEndpoint: string,
+    body?: unknown,
+    o: Omit<Opts, "method"> = {}
+  ) =>
+    doFetch(pathEndpoint, { ...o, method: "PUT", body }).then((r) =>
+      handle<T>(r)
+    ),
+  patch: <T>(
+    pathEndpoint: string,
+    body?: unknown,
+    o: Omit<Opts, "method"> = {}
+  ) =>
+    doFetch(pathEndpoint, { ...o, method: "PATCH", body }).then((r) =>
+      handle<T>(r)
+    ),
   delete: <T>(pathEndpoint: string, o: Omit<Opts, "method" | "body"> = {}) =>
     doFetch(pathEndpoint, { ...o, method: "DELETE" }).then((r) => handle<T>(r)),
 };
