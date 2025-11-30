@@ -24,7 +24,7 @@ export default function ChannelHeader({ channel }: ChannelHeaderProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         {/* Profile Picture */}
         <Avatar className="h-24 w-24 border-4 border-primary/20">
-          <AvatarImage src={channel.profilePicture} alt={channel.channelName} />
+          <AvatarImage className="object-cover" src={channel.profilePicture} alt={channel.channelName}/>
           <AvatarFallback className="text-2xl font-bold">
             {channel.channelName.substring(0, 2).toUpperCase()}
           </AvatarFallback>

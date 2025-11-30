@@ -1,139 +1,88 @@
+// src/components/features/contents/CategoryTabs.tsx
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MoreHorizontal } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import React from "react";
+import { SlidersHorizontal, PlayCircle, Music2 } from "lucide-react";
 
-interface Category {
-  id: string;
-  name: string;
-  isActive?: boolean;
+export type MediaType = "all" | "video" | "audio";
+
+interface CategoryTabsProps {
+  mediaType: MediaType; // 👈 รับค่าจาก parent
+  onMediaTypeChange?: (type: MediaType) => void;
 }
 
-const categories: Category[] = [
-  { id: "learning", name: "Learning Activities", isActive: true },
-  { id: "events", name: "University Events" },
-  { id: "research", name: "Research & Projects" },
-];
-
-const learningCategories = [
-  "Computer Science",
-  "Engineering", 
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Language Studies",
-  "Business",
-  "Data Science"
-];
-
-const eventCategories = [
-  "Workshops",
-  "Seminars",
-  "Career Fair",
-  "Sports Day",
-  "Cultural Events",
-  "Graduation",
-  "Orientation",
-  "Guest Lectures"
-];
-
-const researchCategories = [
-  "Final Year Project",
-  "Research Presentation",
-  "Thesis Defense",
-  "Lab Sessions",
-  "Group Projects",
-  "Innovation Fair",
-  "Academic Conference"
-];
-
-export default function CategoryTabs() {
-  const [activeCategory, setActiveCategory] = useState("learning");
-  const [activeSubcategory, setActiveSubcategory] = useState("Computer Science");
-
-  // Get the appropriate subcategories based on active category
-  const getSubcategories = useCallback(() => {
-    switch (activeCategory) {
-      case "learning":
-        return learningCategories;
-      case "events":
-        return eventCategories;
-      case "research":
-        return researchCategories;
-      default:
-        return learningCategories;
-    }
-  }, [activeCategory]);
-
-  const subcategories = getSubcategories();
-
-  // Update subcategory when main category changes
-  useEffect(() => {
-    const newSubcategories = getSubcategories();
-    if (newSubcategories.length > 0) {
-      setActiveSubcategory(newSubcategories[0]);
-    }
-  }, [activeCategory, getSubcategories]);
-
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveCategory(categoryId);
+export default function CategoryTabs({
+  mediaType,
+  onMediaTypeChange,
+}: CategoryTabsProps) {
+  const handleMediaTypeChange = (value: MediaType) => {
+    console.log("[CategoryTabs] change to:", value);
+    onMediaTypeChange?.(value);
   };
 
+  const tabs: { label: string; value: MediaType; icon: React.ReactNode }[] = [
+    {
+      label: "All Types",
+      value: "all",
+      icon: <SlidersHorizontal className="h-4 w-4" />,
+    },
+    {
+      label: "Video",
+      value: "video",
+      icon: <PlayCircle className="h-4 w-4" />,
+    },
+    {
+      label: "Audio",
+      value: "audio",
+      icon: <Music2 className="h-4 w-4" />,
+    },
+  ];
+
   return (
-    <div className="space-y-4">
-      {/* Main Categories */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-foreground">Categories</span>
-        <div className="flex gap-2">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={activeCategory === category.id ? "default" : "secondary"}
-              size="sm"
-              className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                activeCategory === category.id
-                  ? "bg-primary text-background hover:bg-primary/85"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-              onClick={() => handleCategoryChange(category.id)}
-            >
-              {category.name}
-            </Button>
-          ))}
+    <div className="flex flex-col gap-4 rounded-2xl border bg-card/40 p-4 shadow-sm">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Discover
+          </p>
+          <h2 className="text-lg font-semibold text-foreground">
+            Filter Content
+          </h2>
         </div>
-        
-        {/* More Options */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="rounded-full p-2 text-muted-foreground hover:text-foreground"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+
+        {/* Optional: Add a subtle hint or secondary action here if needed */}
       </div>
 
-      {/* Subcategories */}
-      <div className="flex flex-wrap gap-2">
-        {subcategories.map((subcategory) => (
-          <Button
-            key={subcategory}
-            variant={activeSubcategory === subcategory ? "default" : "outline"}
-            size="sm"
-            className={cn(
-              "rounded-full px-4 py-2 text-sm transition-colors",
-              activeSubcategory === subcategory
-                ? "bg-black text-white hover:bg-black/90"
-                : "border-border bg-background text-foreground hover:bg-muted"
-            )}
-            onClick={() => setActiveSubcategory(subcategory)}
-          >
-            {subcategory}
-          </Button>
-        ))}
+      {/* Tabs Section */}
+      <div className="flex flex-wrap items-center gap-2">
+        {tabs.map((tab) => {
+          const isActive = mediaType === tab.value;
+          return (
+            <button
+              key={tab.value}
+              onClick={() => handleMediaTypeChange(tab.value)}
+              className={`
+                group flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200
+                ${
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }
+              `}
+            >
+              {/* Icon with subtle animation on active/hover */}
+              <span
+                className={`transition-transform duration-200 ${
+                  isActive ? "scale-110" : "group-hover:scale-110"
+                }`}
+              >
+                {tab.icon}
+              </span>
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

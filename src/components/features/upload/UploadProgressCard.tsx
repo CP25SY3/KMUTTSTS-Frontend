@@ -23,20 +23,20 @@ export function UploadProgressCard({
         return {
           icon: Upload,
           title: "Ready to Upload",
-          description: "Select a video file to begin",
+          description: "Select a content file to begin",
           color: "text-muted-foreground",
         };
       case "uploading":
         return {
           icon: Upload,
-          title: "Uploading Video",
+          title: "Uploading Content",
           description: `Uploading... ${Math.round(uploadPct)}%`,
           color: "text-blue-600",
         };
       case "processing":
         return {
           icon: Video,
-          title: "Processing Video",
+          title: "Processing Content",
           description: "Converting to HLS format and generating thumbnails",
           color: "text-orange-600",
         };
@@ -44,7 +44,7 @@ export function UploadProgressCard({
         return {
           icon: CheckCircle,
           title: "Upload Complete",
-          description: "Your video is ready to view",
+          description: "Your content is ready to view",
           color: "text-green-600",
         };
       case "failed":
@@ -106,7 +106,7 @@ export function UploadProgressCard({
         {phase === "processing" && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Processing Video</span>
+              <span>Processing Content</span>
               {processPct > 0 ? (
                 <span>{Math.round(processPct)}%</span>
               ) : (
@@ -158,7 +158,7 @@ export function UploadProgressCard({
 
           {phase === "ready" && onView && (
             <Button onClick={onView} size="sm" className="flex-1">
-              View Video
+              View Content
             </Button>
           )}
         </div>

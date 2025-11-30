@@ -20,9 +20,8 @@ export async function fetchContents(
   params?: ContentsParams
 ): Promise<ContentItem[]> {
   const q = toQuery(params);
-  const data = await apiClient.get<ContentsResponse>(
-    `${pathEndpoints.contents.list}${q ? `?${q}` : ""}`
-  );
+  const url = `${pathEndpoints.contents.list}${q ? `?${q}` : ""}`;
+  const data = await apiClient.get<ContentsResponse>(url);
   // map to convert thumbnail URL
   return data.map((item) => ({
     ...item,
