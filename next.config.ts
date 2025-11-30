@@ -6,7 +6,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   images: {
-    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === "1",
+    unoptimized:
+      process.env.NEXT_IMAGE_UNOPTIMIZED === "1" ||
+      process.env.NEXT_IMAGE_UNOPTIMIZED === "true",
     domains: ["cp25sy3.sit.kmutt.ac.th", "localhost"],
     formats: ["image/avif", "image/webp"],
 
@@ -30,7 +32,7 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  }
+  },
 };
 
 export default nextConfig;
