@@ -20,9 +20,6 @@ export function mediaURL(path?: string | ""): string {
     return path;
   }
   const baseWithPath = `${BASE}${path}`;
-  console.log(
-    `[mediaURL]: BASE='${BASE}', path='${path}' => '${baseWithPath}'`
-  );
 
   // รวม BASE URL กับ path
   return baseWithPath;

@@ -16,7 +16,6 @@ export default function CategoryTabs({
   onMediaTypeChange,
 }: CategoryTabsProps) {
   const handleMediaTypeChange = (value: MediaType) => {
-    console.log("[CategoryTabs] change to:", value);
     onMediaTypeChange?.(value);
   };
 

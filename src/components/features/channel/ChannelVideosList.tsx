@@ -23,13 +23,6 @@ export default function ChannelVideosList({
   const [searchQuery, setSearchQuery] = useState("");
   const [mediaType, setMediaType] = useState<MediaType>("all");
 
-  console.log(
-    "[ChannelVideosList] mediaType =",
-    mediaType,
-    "search =",
-    searchQuery
-  );
-
   const {
     data,
     fetchNextPage,

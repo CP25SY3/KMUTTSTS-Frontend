@@ -56,8 +56,6 @@ export default function UniversalVideoCard({
     return duration;
   };
 
-  console.log(content);
-
   const formatViews = (views?: number, viewerCount?: string) => {
     if (viewerCount) return viewerCount;
     if (!views) return "0";
