@@ -143,22 +143,39 @@ export default function PlayerPage() {
         <ContentHeaderSection
           onBack={() => router.back()}
           title={content.title}
-          artist={content.relations?.channel?.name || "Unknown Artist"}
+          artist={content.relations?.channel?.name || "Unknown Creator"}
         />
       </div>
       <div className="container mx-auto p-2 sm:p-2">
         <div className="max-w-6xl mx-auto">
-          {/* Video Player */}
+          {/* Content Player */}
           <div className="mb-6 p-0 md:p-4">
             {content.type === "audio" ? (
-              <AudioPlayer
-                src={content.files?.source?.url || ""}
+              content.playback?.hlsMasterUrl ? (
+                <AudioPlayer
+                src={content.playback.hlsMasterUrl}
                 title={content.title}
-                artist={content.relations?.channel?.name || "Unknown Artist"}
+                artist={content.relations?.channel?.name || "Unknown Creator"}
                 thumbnailUrl={content.files?.thumbnail?.url}
                 duration={content.duration}
-                onBack={() => window.history.back()}
-              />
+                onBack={() => router.back()}
+                />
+              ) : (
+                <div className="w-full aspect-video rounded-lg bg-muted flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-muted-foreground mb-2">
+                      {content.status.transcode === "processing"
+                        ? "Processing..."
+                        : "Audio not available"}
+                    </div>
+                    {content.status.error && (
+                      <div className="text-sm text-red-500">
+                        Error: {content.status.error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
             ) : content.status.transcode === "completed" &&
               content.playback.hlsMasterUrl ? (
               <HlsVideoPlayer
@@ -182,7 +199,7 @@ export default function PlayerPage() {
                 <div className="text-center">
                   <div className="text-muted-foreground mb-2">
                     {content.status.transcode === "processing"
-                      ? "Processing video..."
+                      ? "Processing..."
                       : "Video not ready"}
                   </div>
                   {content.status.error && (
@@ -198,7 +215,7 @@ export default function PlayerPage() {
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-3 p-4">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              {/* Video Info */}
+              {/* Content Info */}
               <div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-4">
                   <div className="flex items-center gap-1">
